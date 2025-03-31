@@ -1,0 +1,266 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Contact Us - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contact-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .contact-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .contact-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .contact-header h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+    
+    .contact-content {
+        padding: 30px;
+    }
+    
+    .contact-form {
+        margin-top: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        outline: none;
+    }
+    
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+    
+    .submit-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .submit-btn:hover {
+        background-color: #3a4a40;
+    }
+    
+    .contact-info {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+    }
+    
+    .contact-info h2 {
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .info-item i {
+        width: 30px;
+        color: var(--primary-color);
+        font-size: 18px;
+    }
+    
+    .info-item p {
+        margin: 0;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    
+    .success-message {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .previous-messages {
+        margin-top: 30px;
+    }
+    
+    .message-card {
+        background-color: #f8f9fa;
+        border-left: 4px solid var(--primary-color);
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+    }
+    
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .message-content {
+        margin-bottom: 10px;
+    }
+    
+    .message-response {
+        background-color: #e9f7ef;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-container">
+    <div class="contact-card">
+        <div class="contact-header">
+            <h1>Contact Us</h1>
+        </div>
+        
+        <div class="contact-content">
+            {% if confirmation_message %}
+            <div class="success-message">
+                {{ confirmation_message }}
+            </div>
+            {% endif %}
+            
+            <p>Have questions, feedback, or need assistance? We're here to help! Fill out the form below and our team will get back to you as soon as possible.</p>
+            
+            <form class="contact-form" method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" class="form-control" required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Send Message</button>
+            </form>
+            
+            {% if previous_messages %}
+            <div class="previous-messages">
+                <h2>Your Previous Messages</h2>
+                
+                {% for message in previous_messages %}
+                <div class="message-card">
+                    <div class="message-header">
+                        <span>Subject: {{ message.subject }}</span>
+                        <span>{{ message.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="message-content">
+                        <strong>Your Message:</strong>
+                        <p>{{ message.message }}</p>
+                    </div>
+                    {% if message.admin_response %}
+                    <div class="message-response">
+                        <strong>Response:</strong>
+                        <p>{{ message.admin_response }}</p>
+                    </div>
+                    {% else %}
+                    <p><em>Awaiting response...</em></p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="contact-info">
+                <h2>Contact Information</h2>
+                
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <p>support@laundrygo.com</p>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-phone"></i>
+                    <p>+91 1234567890</p>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <p>123 Laundry Street, Clean City, 400001</p>
+                </div>
+                
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <p>Monday - Saturday: 9:00 AM - 6:00 PM</p>
+                </div>
+            </div>
+            
+            <a href="{% url 'landing' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

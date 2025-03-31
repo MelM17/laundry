@@ -1,0 +1,93 @@
+{% extends 'admin_portal/base.html' %}
+
+{% block title %}Contact Messages - LaundryGo Admin{% endblock %}
+
+{% block page_title %}Contact Messages{% endblock %}
+
+{% block content %}
+<div class="manage-contact-container">
+    <div class="card">
+        <h2>Contact Messages</h2>
+        
+        <div class="filter-section" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <form method="get" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="query" class="form-control" placeholder="Search by name, email or subject" value="{{ query }}">
+                </div>
+                <div style="flex: 0 0 auto;">
+                    <select name="status" class="form-control">
+                        <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="replied" {% if status == 'replied' %}selected{% endif %}>Replied</option>
+                        <option value="closed" {% if status == 'closed' %}selected{% endif %}>Closed</option>
+                        <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto;">
+                    <button type="submit" class="btn">Filter</button>
+                </div>
+            </form>
+        </div>
+        
+        {% if page_obj %}
+        {% for message in page_obj %}
+        <div class="message-card" style="background-color: #222; color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">
+                    <strong>From:</strong> {{ message.name }} {% if message.is_registered_user %}(Registered User){% endif %}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Email:</strong> {{ message.email }}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Subject:</strong> {{ message.subject }}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Date:</strong> {{ message.created_at|date:"F d, Y" }}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Message:</strong> {{ message.message }}
+                </div>
+                
+                {% if message.status == 'replied' or message.status == 'closed' %}
+                <div style="margin-top: 10px; padding: 10px; background-color: #28a745; border-radius: 5px;">
+                    <strong>Response:</strong> {{ message.admin_response }}
+                    <div style="margin-top: 5px; font-size: 0.9em;">
+                        <strong>Replied on:</strong> {{ message.updated_at|date:"F d, Y" }}
+                    </div>
+                </div>
+                {% else %}
+                <div style="margin-top: 15px;">
+                    <a href="{% url 'admin_portal:respond_to_contact' message.id %}" class="btn" style="width: 100%; text-align: center;">Respond</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination" style="display: flex; justify-content: center; list-style: none; margin-top: 20px;">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">previous</a>
+            {% endif %}
+            
+            <span style="margin: 0 5px; padding: 5px 10px;">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">last &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div style="text-align: center; padding: 30px;">
+            <p>No contact messages found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

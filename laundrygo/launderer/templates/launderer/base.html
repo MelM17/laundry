@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LaundryGo Launderer{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Base Styles */
+        :root {
+            --primary-color: #4a5d50;
+            --secondary-color: #f0d78c;
+            --text-color: #333;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+            --info-color: #17a2b8;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-image: url('/static/customer/images/background.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .page-title {
+            background-color: #222;
+            color: white;
+            padding: 15px;
+            text-align: right;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--dark-color);
+            color: white;
+            width: 200px;
+            position: fixed;
+            height: 100%;
+            padding: 20px 0;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-menu a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 200px;
+            padding: 20px;
+            min-height: calc(100vh - 60px);
+        }
+        
+        /* Card Styles */
+        .card {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3a4a40;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0c77c;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Alert Styles */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* Order Card Styles */
+        .order-card {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .order-card.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .order-card.confirmed {
+            border-left-color: #17a2b8;
+        }
+        
+        .order-card.processing {
+            border-left-color: #6f42c1;
+        }
+        
+        .order-card.ready {
+            border-left-color: #28a745;
+        }
+        
+        .order-card.delivered {
+            border-left-color: #28a745;
+        }
+        
+        .order-card.rejected {
+            border-left-color: #dc3545;
+        }
+        
+        /* Filter Form */
+        .filter-form {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-form .form-group {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-form .btn {
+            margin-top: 0;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 10px 0;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .sidebar-menu li {
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .filter-form {
+                flex-direction: column;
+            }
+            
+            .filter-form .form-group {
+                width: 100%;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated and user.user_type == 'launderer' %}
+    <div class="sidebar">
+        <ul class="sidebar-menu">
+            <li><a href="{% url 'launderer:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>Home</a></li>
+            <li><a href="{% url 'launderer:received_orders' %}" {% if request.resolver_match.url_name == 'received_orders' %}class="active"{% endif %}>Received Orders</a></li>
+            <li><a href="{% url 'launderer:pending_orders' %}"endif%}>Received Orders</a></li>
+            <li><a href="{% url 'launderer:pending_orders' %}" {% if request.resolver_match.url_name == 'pending_orders' %}class="active"{% endif %}>Pending Orders</a></li>
+            <li><a href="{% url 'launderer:completed_orders' %}" {% if request.resolver_match.url_name == 'completed_orders' %}class="active"{% endif %}>Completed Orders</a></li>
+            <li><a href="{% url 'launderer:rejected_orders' %}" {% if request.resolver_match.url_name == 'rejected_orders' %}class="active"{% endif %}>Rejected Orders</a></li>
+            <li><a href="{% url 'launderer:settings' %}" {% if request.resolver_match.url_name == 'settings' %}class="active"{% endif %}>Settings</a></li>
+            <li><a href="{% url 'launderer:help_support' %}" {% if request.resolver_match.url_name == 'help_support' %}class="active"{% endif %}>Help</a></li>
+            <!-- Add this to your launderer base.html file in the navigation section -->
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'launderer:notifications' %}">
+                    <i class="fas fa-bell"></i> Notifications
+                    {% if request.session.notification_count > 0 %}
+                    <span class="badge badge-pill badge-danger">{{ request.session.notification_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li><a href="{% url 'launderer:logout' %}">Log Out</a></li>
+        </ul>
+    </div>
+    {% endif %}
+    
+    <div class="{% if user.is_authenticated and user.user_type == 'launderer' %}main-content{% endif %}">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        LaundryGo: Connecting You Online
+                    </div>
+                    {% if user.is_authenticated and user.user_type == 'launderer' %}
+                    <div class="user-info">
+                        {{ user.launderer_profile.business_name }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+        
+        {% if user.is_authenticated and user.user_type == 'launderer' %}
+        <div class="page-title">
+            <div class="container">
+                {% block page_title %}{% endblock %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="container">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <script>
+        // Common JavaScript functions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close alert messages after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.style.display = 'none';
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

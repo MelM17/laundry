@@ -1,0 +1,93 @@
+{% extends 'launderer/base.html' %}
+
+{% block title %}Edit Cloth Item - LaundryGo Launderer{% endblock %}
+
+{% block page_title %}Edit Cloth Item{% endblock %}
+
+{% block extra_css %}
+<style>
+  .edit-form {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .form-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+  }
+  
+  .service-type-info {
+      background-color: #e9f7ef;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #28a745;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Edit Cloth Item</h2>
+  
+  <div class="service-type-info">
+      <p>Assign this cloth item to a specific service type (e.g., Washing, Dry Cleaning, Ironing) or leave it blank to make it available for all services.</p>
+  </div>
+  
+  <form method="post" class="edit-form">
+      {% csrf_token %}
+      
+      <div class="form-group">
+          <label for="{{ form.cloth_type.id_for_label }}">Cloth Type:</label>
+          {{ form.cloth_type }}
+          <small class="form-text text-muted">Enter the type of cloth (e.g., Cotton, Silk, Wool)</small>
+          {% if form.cloth_type.errors %}
+          <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+              {{ form.cloth_type.errors }}
+          </div>
+          {% endif %}
+      </div>
+      
+      <div class="form-group">
+          <label for="{{ form.cloth_name.id_for_label }}">Cloth Name:</label>
+          {{ form.cloth_name }}
+          <small class="form-text text-muted">Enter the specific name of the cloth item (e.g., T-Shirt, Pants, Saree)</small>
+          {% if form.cloth_name.errors %}
+          <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+              {{ form.cloth_name.errors }}
+          </div>
+          {% endif %}
+      </div>
+      
+      <div class="form-group">
+          <label for="{{ form.service_type.id_for_label }}">Service Type:</label>
+          {{ form.service_type }}
+          <small class="form-text text-muted">Select the service type this item is available for, or leave blank for all services</small>
+          {% if form.service_type.errors %}
+          <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+              {{ form.service_type.errors }}
+          </div>
+          {% endif %}
+      </div>
+      
+      <div class="form-group">
+          <label for="{{ form.price.id_for_label }}">Price (₹):</label>
+          {{ form.price }}
+          {% if form.price.errors %}
+          <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+              {{ form.price.errors }}
+          </div>
+          {% endif %}
+      </div>
+      
+      <div class="form-buttons">
+          <a href="{% url 'launderer:manage_cloth_items' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-success">Update Cloth Item</button>
+      </div>
+  </form>
+</div>
+{% endblock %}
+

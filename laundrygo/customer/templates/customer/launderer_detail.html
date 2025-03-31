@@ -1,0 +1,352 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}{{ launderer.business_name }} - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+  .launderer-detail {
+      display: flex;
+      margin-bottom: 30px;
+  }
+  
+  .launderer-profile-large {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: 20px;
+  }
+  
+  .launderer-profile-large img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+  }
+  
+  .launderer-detail-info {
+      flex: 1;
+  }
+  
+  .business-name {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+  }
+  
+  .detail-row {
+      margin-bottom: 5px;
+  }
+  
+  .detail-label {
+      font-weight: bold;
+      display: inline-block;
+      width: 80px;
+  }
+  
+  .cloth-table {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+  }
+  
+  .cloth-table th {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 10px;
+      text-align: left;
+  }
+  
+  .cloth-table td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+  }
+  
+  .cloth-table tr:hover {
+      background-color: #f5f5f5;
+  }
+  
+  .reviews-container {
+      background-color: #e0d0a0;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+  }
+  
+  .review-item {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+  }
+  
+  .review-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+  }
+  
+  .review-author {
+      font-weight: bold;
+  }
+  
+  .review-date {
+      color: #777;
+      font-size: 0.9rem;
+  }
+  
+  .schedule-btn {
+      display: block;
+      width: 200px;
+      padding: 12px;
+      background-color: var(--primary-color);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 20px;
+      font-weight: bold;
+  }
+  
+  .schedule-btn:hover {
+      background-color: #3a4a40;
+  }
+  
+  .no-reviews {
+      text-align: center;
+      padding: 15px;
+      background-color: white;
+      border-radius: 5px;
+      font-style: italic;
+      color: #666;
+  }
+  
+  .services-section {
+      background-color: #f0f8ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+  }
+  
+  .services-section h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+  }
+  
+  .service-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+  }
+  
+  .service-tag {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+  }
+  
+  .working-hours {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+  }
+  
+  .working-hours h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+  }
+  
+  .hours-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+  }
+  
+  .day-hours {
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .day-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+  }
+  
+  .hours {
+      font-size: 0.9rem;
+  }
+  
+  .closed {
+      color: #dc3545;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="launderer-detail">
+      <div class="launderer-profile-large">
+          {% if launderer.user.profile_pic %}
+          <img src="{{ launderer.user.profile_pic.url }}" alt="{{ launderer.business_name }}">
+          {% else %}
+          <img src="/static/customer/images/default-profile.png" alt="Default Profile">
+          {% endif %}
+      </div>
+      <div class="launderer-detail-info">
+          <h2 class="business-name">{{ launderer.business_name }}</h2>
+          
+          <div class="detail-row">
+              <span class="detail-label">Name:</span>
+              <span>{{ launderer.user.get_full_name|default:launderer.user.username }}</span>
+          </div>
+          
+          <div class="detail-row">
+              <span class="detail-label">Address:</span>
+              <span>{{ launderer.user.address }}</span>
+          </div>
+          
+          <div class="detail-row">
+              <span class="detail-label">Rating:</span>
+              <span class="launderer-rating">
+                  {% for i in "12345" %}
+                  {% if forloop.counter <= launderer.rating %}
+                  <i class="fas fa-star"></i>
+                  {% elif forloop.counter <= launderer.rating|add:"0.5" %}
+                  <i class="fas fa-star-half-alt"></i>
+                  {% else %}
+                  <i class="far fa-star"></i>
+                  {% endif %}
+                  {% endfor %}
+                  ({{ launderer.rating|default:"0.0" }})
+              </span>
+          </div>
+          
+          <div class="detail-row">
+              <span class="detail-label">Status:</span>
+              {% if launderer.is_available %}
+              <span style="color: var(--success-color);">
+                  <i class="fas fa-check-circle"></i> Available Now
+              </span>
+              {% else %}
+              <span style="color: var(--danger-color);">
+                  <i class="fas fa-times-circle"></i> Currently Unavailable
+              </span>
+              {% endif %}
+          </div>
+      </div>
+  </div>
+  
+  <div class="services-section">
+      <h3>Services Offered</h3>
+      <div class="service-tags">
+          {% for service in available_services %}
+              <div class="service-tag">
+                  {% if service == 'washing' %}
+                      <i class="fas fa-tshirt"></i> Washing
+                  {% elif service == 'dry_cleaning' %}
+                      <i class="fas fa-wind"></i> Dry Cleaning
+                  {% elif service == 'ironing' %}
+                      <i class="fas fa-iron"></i> Ironing
+                  {% elif service == 'full_service' %}
+                      <i class="fas fa-check-double"></i> Full Service
+                  {% else %}
+                      {{ service }}
+                  {% endif %}
+              </div>
+          {% empty %}
+              <p>No specific services listed.</p>
+          {% endfor %}
+      </div>
+  </div>
+  
+  <div class="working-hours">
+      <h3>Working Hours</h3>
+      <div class="hours-grid">
+          {% for hour in working_hours %}
+          <div class="day-hours">
+              <div class="day-name">{{ hour.get_day_display }}</div>
+              <div class="hours {% if hour.is_closed %}closed{% endif %}">
+                  {% if hour.is_closed %}
+                      Closed
+                  {% else %}
+                      {{ hour.open_time|time:"h:i A" }} - {{ hour.close_time|time:"h:i A" }}
+                  {% endif %}
+              </div>
+          </div>
+          {% empty %}
+          <p>Working hours not specified.</p>
+          {% endfor %}
+      </div>
+  </div>
+  
+  <h3>Services & Prices</h3>
+  <table class="cloth-table">
+      <thead>
+          <tr>
+              <th>Cloth Type</th>
+              <th>Cloth Name</th>
+              <th>Service Type</th>
+              <th>Price Per Cloth (Rs.)</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for item in cloth_items %}
+          <tr>
+              <td>{{ item.cloth_type.name }}</td>
+              <td>{{ item.cloth_name }}</td>
+              <td>{{ item.service_type|default:"All Services" }}</td>
+              <td>₹{{ item.price }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+              <td colspan="4">No services available at the moment.</td>
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+  
+  <a href="{% url 'customer:scheduling' launderer.id %}" class="schedule-btn">Schedule Now</a>
+</div>
+
+<div class="reviews-container">
+  <h3>Reviews</h3>
+  {% if reviews %}
+      {% for review in reviews %}
+      <div class="review-item">
+          <div class="review-header">
+              <div class="review-author">{{ review.customer.username }}</div>
+              <div class="review-date">{{ review.created_at|date:"F d, Y" }}</div>
+          </div>
+          <div class="review-rating">
+              {% for i in "12345" %}
+              {% if forloop.counter <= review.rating %}
+              <i class="fas fa-star"></i>
+              {% else %}
+              <i class="far fa-star"></i>
+              {% endif %}
+              {% endfor %}
+          </div>
+          <div class="review-comment">
+              {{ review.comment }}
+          </div>
+      </div>
+      {% endfor %}
+  {% else %}
+      <div class="no-reviews">
+          <p>No reviews yet for this launderer.</p>
+      </div>
+  {% endif %}
+</div>
+{% endblock %}
+

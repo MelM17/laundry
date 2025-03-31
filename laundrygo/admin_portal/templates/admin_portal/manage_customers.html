@@ -1,0 +1,102 @@
+{% extends 'admin_portal/base.html' %}
+
+{% block title %}Manage Customers - LaundryGo Admin{% endblock %}
+
+{% block page_title %}Manage Customers{% endblock %}
+
+{% block content %}
+<div class="manage-customers-container">
+    <div class="card">
+        <h2>Customer Support Queries</h2>
+        
+        <div class="filter-section" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <form method="get" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" name="query" class="form-control" placeholder="Search by name, email or query" value="{{ query }}">
+                </div>
+                <div style="flex: 0 0 auto;">
+                    <select name="status" class="form-control">
+                        <option value="unresolved" {% if status == 'unresolved' %}selected{% endif %}>Unresolved</option>
+                        <option value="resolved" {% if status == 'resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto;">
+                    <button type="submit" class="btn">Filter</button>
+                </div>
+            </form>
+        </div>
+        
+        {% if page_obj %}
+        {% for support in page_obj %}
+        <div class="support-card" style="background-color: #222; color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 5px;">
+                    <strong>Customer Name:</strong> {{ support.user.get_full_name|default:support.user.username }}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Phone Number:</strong> {{ support.user.phone|default:"Not provided" }}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Help Required:</strong> {{ support.query }}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Username:</strong> {{ support.user.username }}
+                </div>
+                <div style="margin-bottom: 5px;">
+                    <strong>Date:</strong> {{ support.created_at|date:"F d, Y" }}
+                </div>
+                
+                {% if support.is_resolved %}
+                <div style="margin-top: 10px; padding: 10px; background-color: #28a745; border-radius: 5px;">
+                    <strong>Response:</strong> {{ support.response }}
+                    <div style="margin-top: 5px; font-size: 0.9em;">
+                        <strong>Resolved on:</strong> {{ support.resolved_at|date:"F d, Y" }}
+                    </div>
+                </div>
+                {% else %}
+                <div style="margin-top: 15px;">
+                    <a href="{% url 'admin_portal:respond_to_customer' support.id %}" class="btn" style="width: 100%; text-align: center;">Respond</a>
+                  support.id %}" class="btn" style="width: 100%; text-align: center;">Respond</a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end;">
+                <form method="post" action="{% url 'admin_portal:respond_to_customer' support.id %}">
+                    {% csrf_token %}
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" name="reply" class="form-control" placeholder="Enter your reply..." style="width: 300px;">
+                        <button type="submit" class="btn">Send Reply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination" style="display: flex; justify-content: center; list-style: none; margin-top: 20px;">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">previous</a>
+            {% endif %}
+            
+            <span style="margin: 0 5px; padding: 5px 10px;">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&query={{ query }}{% endif %}{% if status %}&status={{ status }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">last &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div style="text-align: center; padding: 30px;">
+            <p>No customer support queries found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,469 @@
+{% extends 'launderer/base.html' %}
+
+{% block title %}Settings - LaundryGo Launderer{% endblock %}
+
+{% block page_title %}Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delivery-settings {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .delivery-settings h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+    
+    .delivery-toggle {
+        margin-bottom: 20px;
+    }
+    
+    .delivery-options {
+        padding-left: 20px;
+        margin-top: 15px;
+    }
+    
+    .delivery-options.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .form-check-input {
+        margin-right: 10px;
+    }
+    
+    .help-text {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .service-types-info {
+        background-color: #e9f7ef;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border-left: 4px solid #28a745;
+    }
+    
+    .service-types-info h3 {
+        color: #28a745;
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+    
+    .service-types-info ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+    }
+    
+    .service-types-info li {
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="card">
+        <h2>Laundromat Details</h2>
+        
+        <div style="display: flex; align-items: flex-start; margin-bottom: 20px;">
+            <div style="width: 100px; height: 100px; background-color: #f0f0f0; border-radius: 5px; display: flex; justify-content: center; align-items: center; margin-right: 20px;">
+                {% if user.profile_pic %}
+                <img src="{{ user.profile_pic.url }}" alt="Launderer Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px;">
+                {% else %}
+                <span>Launderer Photo</span>
+                {% endif %}
+            </div>
+            
+            <form method="post" enctype="multipart/form-data" style="flex: 1;">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.business_name.id_for_label }}">Business Name:</label>
+                    {{ form.business_name }}
+                    {% if form.business_name.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.business_name.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Name:</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.name.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}">Phone:</label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.phone.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.address.id_for_label }}">Address:</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.address.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.pincode.id_for_label }}">PIN Code:</label>
+                    {{ form.pincode }}
+                    {% if form.pincode.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.pincode.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.gstin.id_for_label }}">GSTIN:</label>
+                    {{ form.gstin }}
+                    {% if form.gstin.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.gstin.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description:</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.description.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.years_of_experience.id_for_label }}">Years of Experience:</label>
+                    {{ form.years_of_experience }}
+                    {% if form.years_of_experience.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.years_of_experience.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ form.is_available }}
+                        <label for="{{ form.is_available.id_for_label }}">Available for Orders</label>
+                        {% if form.is_available.errors %}
+                        <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                            {{ form.is_available.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="delivery-settings">
+                    <h3>Delivery Settings</h3>
+                    
+                    <div class="delivery-toggle form-check">
+                        {{ form.provides_delivery }}
+                        <label for="{{ form.provides_delivery.id_for_label }}">Provide Delivery Services</label>
+                        <div class="help-text">{{ form.provides_delivery.help_text }}</div>
+                        {% if form.provides_delivery.errors %}
+                        <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                            {{ form.provides_delivery.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="deliveryOptions" class="delivery-options">
+                        <div class="form-group">
+                            <label for="{{ form.delivery_radius.id_for_label }}">Delivery Radius (km):</label>
+                            {{ form.delivery_radius }}
+                            <div class="help-text">{{ form.delivery_radius.help_text }}</div>
+                            {% if form.delivery_radius.errors %}
+                            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                                {{ form.delivery_radius.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.base_delivery_charge.id_for_label }}">Base Delivery Charge (₹):</label>
+                            {{ form.base_delivery_charge }}
+                            {% if form.base_delivery_charge.errors %}
+                            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                                {{ form.base_delivery_charge.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.per_km_charge.id_for_label }}">Per Kilometer Charge (₹):</label>
+                            {{ form.per_km_charge }}
+                            {% if form.per_km_charge.errors %}
+                            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                                {{ form.per_km_charge.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.min_order_free_delivery.id_for_label }}">Minimum Order for Free Delivery (₹):</label>
+                            {{ form.min_order_free_delivery }}
+                            <div class="help-text">{{ form.min_order_free_delivery.help_text }}</div>
+                            {% if form.min_order_free_delivery.errors %}
+                            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                                {{ form.min_order_free_delivery.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.profile_pic.id_for_label }}">Update Profile Photo:</label>
+                    {{ form.profile_pic }}
+                    {% if form.profile_pic.errors %}
+                    <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                        {{ form.profile_pic.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Services</h2>
+        
+        <div class="service-types-info">
+            <h3>Service Types Information</h3>
+            <p>Add different types of services you provide to your customers. Examples include:</p>
+            <ul>
+                <li><strong>Washing</strong> - Basic washing services</li>
+                <li><strong>Dry Cleaning</strong> - Professional dry cleaning for delicate fabrics</li>
+                <li><strong>Ironing</strong> - Ironing and pressing services</li>
+                <li><strong>Full Service</strong> - Complete laundry service including washing, drying, and ironing</li>
+            </ul>
+            <p>Each cloth item can be assigned to specific service types. If no service type is specified, the item will be available for all services.</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Service Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Available</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td>{{ service.service_name }}</td>
+                        <td>{{ service.description|truncatechars:50 }}</td>
+                        <td>₹{{ service.price }}</td>
+                        <td>{% if service.is_active %}<span style="color: #28a745;">Yes</span>{% else %}<span style="color: #dc3545;">No</span>{% endif %}</td>
+                        <td>
+                            <a href="{% url 'launderer:edit_service' service.id %}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                            <form method="post" action="{% url 'launderer:delete_service' service.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="return confirm('Are you sure you want to delete this service?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No services added yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 10px;">
+                <a href="{% url 'launderer:manage_services' %}" class="btn">Manage Services</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Cloth Items</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Type</th>
+                        <th>Service Type</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cloth_items %}
+                    <tr>
+                        <td>{{ item.cloth_name }}</td>
+                        <td>{{ item.cloth_type.name }}</td>
+                        <td>{{ item.service_type|default:"All Services" }}</td>
+                        <td>₹{{ item.price }}</td>
+                        <td>
+                            <a href="{% url 'launderer:edit_cloth_item' item.id %}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                            <form method="post" action="{% url 'launderer:delete_cloth_item' item.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="return confirm('Are you sure you want to delete this cloth item?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No cloth items added yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 10px;">
+                <a href="{% url 'launderer:manage_cloth_items' %}" class="btn">Manage Cloth Items</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Payment Methods</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Payment Type</th>
+                        <th>Details</th>
+                        <th>Primary</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payment_methods %}
+                    <tr>
+                        <td>{{ payment.get_payment_type_display }}</td>
+                        <td>
+                            {% if payment.payment_type == 'upi' %}
+                            UPI ID: {{ payment.upi_id }}
+                            {% elif payment.payment_type == 'bank' %}
+                            Account: {{ payment.account_number }}, IFSC: {{ payment.ifsc_code }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{% if payment.is_primary %}Yes{% else %}No{% endif %}</td>
+                        <td>
+                            <form method="post" action="{% url 'launderer:delete_payment_method' payment.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="return confirm('Are you sure you want to delete this payment method?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center;">No payment methods added yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 10px;">
+                <a href="{% url 'launderer:manage_payment_methods' %}" class="btn">Manage Payment Methods</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Working Hours</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Open Time</th>
+                        <th>Close Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hour in working_hours %}
+                    <tr>
+                        <td>{{ hour.get_day_display }}</td>
+                        <td>{{ hour.open_time|time:"h:i A" }}</td>
+                        <td>{{ hour.close_time|time:"h:i A" }}</td>
+                        <td>{% if hour.is_closed %}<span style="color: #dc3545;">Closed</span>{% else %}<span style="color: #28a745;">Open</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center;">No working hours set</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 10px;">
+                <a href="{% url 'launderer:manage_working_hours' %}" class="btn">Manage Working Hours</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const providesDeliveryCheckbox = document.getElementById('provides_delivery');
+        const deliveryOptions = document.getElementById('deliveryOptions');
+        
+        // Function to toggle delivery options visibility
+        function toggleDeliveryOptions() {
+            if (providesDeliveryCheckbox.checked) {
+                deliveryOptions.classList.remove('disabled');
+            } else {
+                deliveryOptions.classList.add('disabled');
+            }
+        }
+        
+        // Initial toggle
+        toggleDeliveryOptions();
+        
+        // Add event listener for changes
+        providesDeliveryCheckbox.addEventListener('change', toggleDeliveryOptions);
+    });
+</script>
+{% endblock %}
+{% endblock %}
+

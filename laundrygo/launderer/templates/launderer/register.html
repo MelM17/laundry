@@ -1,0 +1,225 @@
+{% extends 'launderer/base.html' %}
+
+{% block title %}Laundromat Sign Up - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-image: url('/static/customer/images/background.jpg');
+        background-size: cover;
+        background-position: center;
+    }
+    
+    .header-container {
+        width: 80%;
+        max-width: 1200px;
+        background-color: rgb(77, 85, 72);
+        text-align: center;
+        padding: 20px;
+        color: white;
+        font-size: 25px;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        margin-bottom: 20px; 
+    }
+    
+    .sub-header {
+        font-size: 14px;
+        margin-top: 5px;
+        font-weight: 400;
+    }
+    
+    .form-container {
+        background: rgba(0, 0, 0, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        width: 400px;
+        margin: 20px 0;
+        color: white;
+    }
+    
+    .form-container h2 {
+        text-align: center;
+        color: white;
+        margin-bottom: 20px;
+    }
+    
+    .form-container label {
+        color: white;
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .form-container .input-group {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .form-container .input-group .half-width {
+        width: calc(50% - 10px);
+    }
+    
+    .form-container .input-group .half-width label {
+        text-align: center;
+        display: block;
+    }
+    
+    .form-container input, 
+    .form-container textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 5px;
+        box-sizing: border-box;
+        background: #fff;
+    }
+    
+    .form-container textarea {
+        resize: none;
+        height: 80px; 
+    }
+    
+    .form-container .submit-btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #84b5ea;
+        color: rgb(0, 0, 0);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 10px; 
+    }
+    
+    .form-container .submit-btn:hover {
+        background-color: #0056b3;
+    }
+    
+    .login-link {
+        text-align: center;
+        margin-top: 15px;
+    }
+    
+    .login-link a {
+        color: #84b5ea;
+        text-decoration: none;
+    }
+    
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: -5px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header-container">
+    LaundryGo
+    <div class="sub-header">Connecting You Online</div>
+</div>
+
+<div class="form-container">
+    <h2>Laundromat Sign Up</h2>
+    <hr>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <label for="{{ form.name.id_for_label }}">Name</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+        <div class="error-message">{{ form.name.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.phone.id_for_label }}">Phone No.</label>
+        {{ form.phone }}
+        {% if form.phone.errors %}
+        <div class="error-message">{{ form.phone.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.business_name.id_for_label }}">Enter Business Name</label>
+        {{ form.business_name }}
+        {% if form.business_name.errors %}
+        <div class="error-message">{{ form.business_name.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.address.id_for_label }}">Address</label>
+        {{ form.address }}
+        {% if form.address.errors %}
+        <div class="error-message">{{ form.address.errors.0 }}</div>
+        {% endif %}
+        
+        <div class="input-group">
+            <div class="half-width">
+                <label for="{{ form.gstin.id_for_label }}">GSTIN</label>
+                {{ form.gstin }}
+                {% if form.gstin.errors %}
+                <div class="error-message">{{ form.gstin.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <div class="half-width">
+                <label for="{{ form.pincode.id_for_label }}">PIN Code</label>
+                {{ form.pincode }}
+                {% if form.pincode.errors %}
+                <div class="error-message">{{ form.pincode.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <label for="{{ form.username.id_for_label }}">Set login-name</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+        <div class="error-message">{{ form.username.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.email.id_for_label }}">Email</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+        <div class="error-message">{{ form.email.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.password1.id_for_label }}">Set Password</label>
+        {{ form.password1 }}
+        {% if form.password1.errors %}
+        <div class="error-message">{{ form.password1.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}
+        <div class="error-message">{{ form.password2.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.upi_id.id_for_label }}">UPI ID (for payments)</label>
+        {{ form.upi_id }}
+        {% if form.upi_id.errors %}
+        <div class="error-message">{{ form.upi_id.errors.0 }}</div>
+        {% endif %}
+        
+        <label for="{{ form.profile_pic.id_for_label }}">Set Profile Photo</label>
+        {{ form.profile_pic }}
+        {% if form.profile_pic.errors %}
+        <div class="error-message">{{ form.profile_pic.errors.0 }}</div>
+        {% endif %}
+        
+        <button type="submit" class="submit-btn">Sign Up</button>
+    </form>
+    
+    <div class="login-link">
+        Already have an account? <a href="{% url 'launderer:login' %}">Login</a>
+    </div>
+</div>
+{% endblock %}

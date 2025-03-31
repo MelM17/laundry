@@ -1,0 +1,121 @@
+{% extends 'admin_portal/base.html' %}
+
+{% block title %}Admin Dashboard - LaundryGo{% endblock %}
+
+{% block page_title %}Home Page{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row">
+        <div class="card">
+            <h2>Welcome to LaundryGo Admin Portal</h2>
+            <p>Manage customers, laundromats, and view analytics from this central dashboard.</p>
+        </div>
+    </div>
+    
+    <div class="row" style="display: flex; flex-wrap: wrap; margin: 0 -10px;">
+        <div class="col" style="flex: 1; min-width: 250px; padding: 0 10px;">
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px;">
+                    <a href="{% url 'admin_portal:new_registrations' %}" class="btn" style="text-align: center;">
+                        New Registration
+                    </a>
+                    <a href="{% url 'admin_portal:manage_customers' %}" class="btn" style="text-align: center;">
+                        Manage Customers
+                    </a>
+                    <a href="{% url 'admin_portal:manage_laundromats' %}" class="btn" style="text-align: center;">
+                        Manage Laundromats
+                    </a>
+                    <a href="{% url 'admin_portal:analytics' %}" class="btn" style="text-align: center;">
+                        Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col" style="flex: 1; min-width: 250px; padding: 0 10px;">
+            <div class="card">
+                <h3>Pending Tasks</h3>
+                <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                    <li style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                        <span>Pending Verifications</span>
+                        <span class="badge" style="background-color: #dc3545; color: white; padding: 3px 8px; border-radius: 10px;">{{ pending_verifications }}</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                        <span>Customer Support Queries</span>
+                        <span class="badge" style="background-color: #ffc107; color: #212529; padding: 3px 8px; border-radius: 10px;">{{ unresolved_customer_support }}</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                        <span>Launderer Support Queries</span>
+                        <span class="badge" style="background-color: #17a2b8; color: white; padding: 3px 8px; border-radius: 10px;">{{ unresolved_launderer_support }}</span>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                        <span>Contact Messages</span>
+                        <span class="badge" style="background-color: #6f42c1; color: white; padding: 3px 8px; border-radius: 10px;">{{ pending_contact_messages }}</span>
+                </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" style="display: flex; flex-wrap: wrap; margin: 0 -10px;">
+        <div class="col" style="flex: 1; min-width: 250px; padding: 0 10px;">
+            <div class="card">
+                <h3>Recent Customer Registrations</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Date Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in recent_customers %}
+                        <tr>
+                            <td>{{ customer.username }}</td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.date_joined|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3">No recent customer registrations</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="col" style="flex: 1; min-width: 250px; padding: 0 10px;">
+            <div class="card">
+                <h3>Recent Laundromat Registrations</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Business Name</th>
+                            <th>Owner</th>
+                            <th>Date Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for launderer in recent_launderers %}
+                        <tr>
+                            <td>{{ launderer.business_name }}</td>
+                            <td>{{ launderer.user.username }}</td>
+                            <td>{{ launderer.user.date_joined|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3">No recent laundromat registrations</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

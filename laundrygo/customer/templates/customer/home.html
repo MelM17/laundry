@@ -1,0 +1,256 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Home - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .search-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .search-input {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .pincode-input {
+        width: 150px;
+    }
+    
+    .available-checkbox {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+    }
+    
+    .available-checkbox input {
+        margin-right: 5px;
+    }
+    
+    .launderer-list {
+        margin-top: 20px;
+    }
+    
+    .launderer-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        padding: 15px;
+        display: flex;
+        transition: transform 0.2s;
+    }
+    
+    .launderer-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .launderer-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 15px;
+    }
+    
+    .launderer-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .launderer-details {
+        flex: 1;
+    }
+    
+    .launderer-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .launderer-rating {
+        color: #f8d32d;
+        margin-bottom: 5px;
+    }
+    
+    .launderer-address {
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .launderer-status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        margin-bottom: 10px;
+    }
+    
+    .status-available {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .status-unavailable {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .view-btn {
+        display: inline-block;
+        padding: 8px 15px;
+        background-color: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    
+    .view-btn:hover {
+        background-color: #3a4a40;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 30px;
+        background-color: white;
+        border-radius: 8px;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        margin-top: 20px;
+    }
+    
+    .pagination a, .pagination span {
+        display: inline-block;
+        padding: 8px 12px;
+        margin: 0 5px;
+        border-radius: 4px;
+    }
+    
+    .pagination a {
+        background-color: var(--primary-color);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .pagination a:hover {
+        background-color: #3a4a40;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <h2>Find Launderers Near You</h2>
+    
+    <form method="get" class="search-form">
+        <div class="search-input">
+            <input type="text" name="query" class="form-control" placeholder="Search by name or location" value="{{ query }}">
+        </div>
+        
+        <div class="pincode-input">
+            <input type="text" name="pincode" class="form-control" placeholder="Pincode" value="{{ pincode }}">
+        </div>
+        
+        <div class="available-checkbox">
+            <input type="checkbox" id="available" name="available" {% if available_only %}checked{% endif %}>
+            <label for="available">Show only available launderers</label>
+        </div>
+        
+        <button type="submit" class="btn">Search</button>
+    </form>
+</div>
+
+<div class="launderer-list">
+    {% if page_obj %}
+        {% for launderer in page_obj %}
+        <div class="launderer-card">
+            <div class="launderer-image">
+                {% if launderer.user.profile_pic %}
+                <img src="{{ launderer.user.profile_pic.url }}" alt="{{ launderer.business_name }}">
+                {% else %}
+                <img src="/static/customer/images/default-profile.png" alt="Default Profile">
+                {% endif %}
+            </div>
+            
+            <div class="launderer-details">
+                <div class="launderer-name">{{ launderer.business_name }}</div>
+                
+                <div class="launderer-rating">
+                    {% for i in "12345" %}
+                    {% if forloop.counter <= launderer.rating %}
+                    <i class="fas fa-star"></i>
+                    {% elif forloop.counter <= launderer.rating|add:"0.5" %}
+                    <i class="fas fa-star-half-alt"></i>
+                    {% else %}
+                    <i class="far fa-star"></i>
+                    {% endif %}
+                    {% endfor %}
+                    ({{ launderer.rating|default:"0.0" }})
+                    {% if not launderer.reviews.exists %}
+                    <span style="color: #666; font-size: 0.9rem;"> - No reviews yet</span>
+                    {% endif %}
+                </div>
+                
+                <div class="launderer-address">
+                    <i class="fas fa-map-marker-alt"></i> {{ launderer.user.address }}
+                    {% if launderer.user.pincode %} - {{ launderer.user.pincode }}{% endif %}
+                </div>
+                
+                <div>
+                    {% if launderer.is_available %}
+                    <span class="launderer-status status-available">
+                        <i class="fas fa-check-circle"></i> Available Now
+                    </span>
+                    {% else %}
+                    <span class="launderer-status status-unavailable">
+                        <i class="fas fa-times-circle"></i> Currently Unavailable
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url 'customer:launderer_detail' launderer.id %}" class="view-btn">View Details</a>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if query %}&query={{ query }}{% endif %}{% if pincode %}&pincode={{ pincode }}{% endif %}{% if available_only %}&available=on{% endif %}">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if query %}&query={{ query }}{% endif %}{% if pincode %}&pincode={{ pincode }}{% endif %}{% if available_only %}&available=on{% endif %}">previous</a>
+            {% endif %}
+            
+            <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query %}&query={{ query }}{% endif %}{% if pincode %}&pincode={{ pincode }}{% endif %}{% if available_only %}&available=on{% endif %}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&query={{ query }}{% endif %}{% if pincode %}&pincode={{ pincode }}{% endif %}{% if available_only %}&available=on{% endif %}">last &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+    <div class="no-results">
+        <h3>No launderers found</h3>
+        <p>Try adjusting your search criteria or check back later.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaundryGo - Connecting You Online</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: url('{% static "customer/images/background.jpg" %}');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .header-container {
+            width: 100%;
+            max-width: 1024px;
+            background-color: rgb(77, 85, 72);
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .sub-header {
+            font-size: 14px;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+        
+        .main-container {
+            width: 100%;
+            max-width: 1024px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .options-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .option {
+            flex: 1;
+            max-width: 45%;
+            background-color: #f0d78c;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 0 10px;
+        }
+        
+        .center-content {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .center-content h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .center-content p {
+            color: #0066cc;
+            font-size: 18px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4a5d50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px 0;
+            width: 80%;
+            box-sizing: border-box;
+        }
+        
+        .btn:hover {
+            background-color: #3a4a40;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .footer a {
+            color: #4a5d50;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .options-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .option {
+                max-width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        LaundryGo
+        <div class="sub-header">Connecting You Online</div>
+    </div>
+    
+    <div class="main-container">
+        <div class="options-container">
+            <div class="option">
+                <h2>Customer</h2>
+                <p>New?</p>
+                <a href="/customer/register/" class="btn">Create Account</a>
+                
+                <p>Account Exists?</p>
+                <a href="/customer/login/" class="btn">Login</a>
+            </div>
+            
+            <div class="center-content">
+                <h1>LAUNDRY MADE SIMPLE</h1>
+                <p>Find your laundromat</p>
+            </div>
+            
+            <div class="option">
+                <h2>Laundromat</h2>
+                <p>New?</p>
+                <a href="/launderer/register/" class="btn">Create Account</a>
+                
+                <p>Account Exists?</p>
+                <a href="/launderer/login/" class="btn">Login</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <a href="/about/">About Us</a>
+            <a href="/admin/">Admin Login</a>
+            <a href="/customer/unregistered-contact/">Contact</a>
+        </div>
+    </div>
+</body>
+</html>
+

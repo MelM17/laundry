@@ -1,0 +1,192 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Settings - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .settings-card {
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .settings-header {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .settings-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .profile-section {
+        display: flex;
+        margin-bottom: 20px;
+    }
+    
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 20px;
+    }
+    
+    .profile-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .profile-details {
+        flex: 1;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .save-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    
+    .save-btn:hover {
+        background-color: #3a4a40;
+    }
+    
+    .errorlist {
+        color: var(--danger-color);
+        list-style: none;
+        padding: 0;
+        margin: 5px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-card">
+        <div class="settings-header">
+            <div class="settings-title">Account Settings</div>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="profile-section">
+                <div class="profile-image">
+                    {% if user.profile_pic %}
+                    <img src="{{ user.profile_pic.url }}" alt="{{ user.username }}">
+                    {% else %}
+                    <img src="/static/customer/images/default-profile.png" alt="Default Profile">
+                    {% endif %}
+                </div>
+                
+                <div class="profile-details">
+                    <div class="form-group">
+                        <label for="{{ form.profile_pic.id_for_label }}">Profile Picture</label>
+                        {{ form.profile_pic }}
+                        {% if form.profile_pic.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.profile_pic.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <ul class="errorlist">
+                    {% for error in form.username.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <ul class="errorlist">
+                    {% for error in form.email.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">Phone</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                <ul class="errorlist">
+                    {% for error in form.phone.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.address.id_for_label }}">Address</label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                <ul class="errorlist">
+                    {% for error in form.address.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.pincode.id_for_label }}">Pincode</label>
+                {{ form.pincode }}
+                {% if form.pincode.errors %}
+                <ul class="errorlist">
+                    {% for error in form.pincode.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="save-btn">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

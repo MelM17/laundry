@@ -1,0 +1,61 @@
+{% extends 'launderer/base.html' %}
+
+{% block title %}Edit Service - LaundryGo Launderer{% endblock %}
+
+{% block page_title %}Edit Service{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Edit Service</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.service_name.id_for_label }}">Service Name:</label>
+            {{ form.service_name }}
+            {% if form.service_name.errors %}
+            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                {{ form.service_name.errors }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">Description:</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                {{ form.description.errors }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.price.id_for_label }}">Price (₹):</label>
+            {{ form.price }}
+            {% if form.price.errors %}
+            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                {{ form.price.errors }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group form-check">
+            {{ form.is_active }}
+            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Available</label>
+            {% if form.is_active.errors %}
+            <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                {{ form.is_active.errors }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <a href="{% url 'launderer:manage_services' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success">Update Service</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

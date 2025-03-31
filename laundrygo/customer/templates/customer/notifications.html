@@ -1,0 +1,187 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Notifications - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notifications-container {
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 5px;
+        color: white;
+    }
+    
+    .notifications-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .notifications-title {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+    
+    .mark-all-read {
+        background-color: #007bff;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .mark-all-read i {
+        margin-right: 5px;
+    }
+    
+    .notifications-content {
+        background-color: white;
+        border-radius: 5px;
+        padding: 20px;
+        color: var(--text-color);
+    }
+    
+    .notification-item {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        transition: background-color 0.3s;
+    }
+    
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+    
+    .notification-item:hover {
+        background-color: #f9f9f9;
+    }
+    
+    .notification-item.unread {
+        background-color: #f0f7ff;
+    }
+    
+    .notification-item.unread:hover {
+        background-color: #e6f0ff;
+    }
+    
+    .notification-dot {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 10px;
+        height: 10px;
+        background-color: #007bff;
+        border-radius: 50%;
+    }
+    
+    .notification-title {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    
+    .notification-message {
+        color: #666;
+        margin-bottom: 10px;
+    }
+    
+    .notification-time {
+        font-size: 0.8rem;
+        color: #999;
+    }
+    
+    .notification-actions {
+        margin-top: 10px;
+    }
+    
+    .notification-btn {
+        display: inline-block;
+        padding: 5px 10px;
+        background-color: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-right: 10px;
+    }
+    
+    .notification-btn:hover {
+        background-color: #3a4a40;
+    }
+    
+    .notification-btn.mark-read {
+        background-color: #6c757d;
+    }
+    
+    .notification-btn.mark-read:hover {
+        background-color: #5a6268;
+    }
+    
+    .no-notifications {
+        text-align: center;
+        padding: 30px;
+        color: #666;
+    }
+    
+    .no-notifications i {
+        font-size: 3rem;
+        color: #ddd;
+        margin-bottom: 15px;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <div class="notifications-header">
+        <div class="notifications-title">Notifications</div>
+        {% if notifications %}
+        <form method="post" action="{% url 'customer:mark_all_read' %}">
+            {% csrf_token %}
+            <button type="submit" class="mark-all-read">
+                <i class="fas fa-check-double"></i> Mark All as Read
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    
+    <div class="notifications-content">
+        {% if notifications %}
+            {% for notification in notifications %}
+            <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                {% if not notification.is_read %}
+                <div class="notification-dot"></div>
+                {% endif %}
+                <div class="notification-title">{{ notification.title }}</div>
+                <div class="notification-message">{{ notification.message }}</div>
+                <div class="notification-time">{{ notification.created_at|timesince }} ago</div>
+                <div class="notification-actions">
+                    {% if notification.order %}
+                    <a href="{% url 'customer:order_details' notification.order.order_id %}" class="notification-btn">View Order</a>
+                    {% endif %}
+                    {% if not notification.is_read %}
+                    <form method="post" action="{% url 'customer:mark_notification_read' notification.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="notification-btn mark-read">Mark as Read</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-notifications">
+                <i class="fas fa-bell-slash"></i>
+                <p>You don't have any notifications yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

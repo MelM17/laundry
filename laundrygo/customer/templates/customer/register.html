@@ -1,0 +1,130 @@
+{% extends 'customer/base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-image: url('/static/customer/images/background.jpg');
+        background-size: cover;
+        background-position: center;
+    }
+    
+    .register-container {
+        width: 100%;
+        max-width: 600px;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        margin: 40px 0;
+    }
+    
+    .register-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .register-content {
+        padding: 20px;
+    }
+    
+    .register-form .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .register-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .register-form input,
+    .register-form textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .register-form textarea {
+        height: 100px;
+    }
+    
+    .register-form button {
+        width: 100%;
+        padding: 12px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+    
+    .register-form button:hover {
+        background-color: #3a4a40;
+    }
+    
+    .register-links {
+        margin-top: 15px;
+        text-align: center;
+    }
+    
+    .register-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .register-links a:hover {
+        text-decoration: underline;
+    }
+    
+    .errorlist {
+        color: var(--danger-color);
+        list-style: none;
+        padding: 0;
+        margin: 5px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-header">
+        <h1>Register as Customer</h1>
+        <p>Join LaundryGo today</p>
+    </div>
+    
+    <div class="register-content">
+        <form class="register-form" method="post">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <ul class="errorlist">
+                    {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <button type="submit">Register</button>
+        </form>
+        
+        <div class="register-links">
+            <p>Already have an account? <a href="{% url 'customer:login' %}">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

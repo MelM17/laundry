@@ -1,0 +1,158 @@
+{% extends 'launderer/base.html' %}
+
+{% block title %}Dashboard - LaundryGo Launderer{% endblock %}
+
+{% block page_title %}Home{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row">
+        <div class="card">
+            <h2>Welcome to LaundryGo Launderer Portal</h2>
+            <p>Manage your laundry business, track orders, and update your services from this central dashboard.</p>
+            
+            {% if not user.launderer_profile.is_verified %}
+            <div class="alert alert-danger">
+                <strong>Your account is pending verification by admin.</strong> You can still update your profile and services, but you won't be visible to customers until your account is verified.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row" style="display: flex; flex-wrap: wrap; margin: 0 -10px;">
+        <div class="col" style="flex: 1; min-width: 200px; padding: 0 10px;">
+            <div class="card" style="background-color: #f8d7da; color: #721c24;">
+                <h3>Received Orders</h3>
+                <div style="font-size: 2rem; font-weight: bold; text-align: center; margin: 10px 0;">{{ pending_acceptance_orders }}</div>
+                <div style="text-align: center;">
+                    <a href="{% url 'launderer:received_orders' %}" class="btn" style="background-color: #721c24;">View Orders</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col" style="flex: 1; min-width: 200px; padding: 0 10px;">
+            <div class="card" style="background-color: #d1ecf1; color: #0c5460;">
+                <h3>Pending Orders</h3>
+                <div style="font-size: 2rem; font-weight: bold; text-align: center; margin: 10px 0;">{{ confirmed_orders|add:processing_orders|add:ready_orders }}</div>
+                <div style="text-align: center;">
+                    <a href="{% url 'launderer:pending_orders' %}" class="btn" style="background-color: #0c5460;">View Orders</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col" style="flex: 1; min-width: 200px; padding: 0 10px;">
+            <div class="card" style="background-color: #d4edda; color: #155724;">
+                <h3>Completed Orders</h3>
+                <div style="font-size: 2rem; font-weight: bold; text-align: center; margin: 10px 0;">{{ completed_orders }}</div>
+                <div style="text-align: center;">
+                    <a href="{% url 'launderer:completed_orders' %}" class="btn" style="background-color: #155724;">View Orders</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col" style="flex: 1; min-width: 200px; padding: 0 10px;">
+            <div class="card" style="background-color: #f8d7da; color: #721c24;">
+                <h3>Rejected Orders</h3>
+                <div style="font-size: 2rem; font-weight: bold; text-align: center; margin: 10px 0;">{{ rejected_orders }}</div>
+                <div style="text-align: center;">
+                    <a href="{% url 'launderer:rejected_orders' %}" class="btn" style="background-color: #721c24;">View Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="card">
+            <h3>Recent Orders</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td>{{ order.order_id|truncatechars:8 }}</td>
+                        <td>{{ order.customer.get_full_name|default:order.customer.username }}</td>
+                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                        <td>{{ order.get_service_type_display }}</td>
+                        <td>
+                            <span style="
+                                display: inline-block;
+                                padding: 3px 8px;
+                                border-radius: 3px;
+                                font-size: 0.8rem;
+                                {% if order.status == 'pending_acceptance' %}
+                                    background-color: #ffc107;
+                                    color: #212529;
+                                {% elif order.status == 'confirmed' %}
+                                    background-color: #17a2b8;
+                                    color: white;
+                                {% elif order.status == 'picked_up' or order.status == 'processing' %}
+                                    background-color: #6f42c1;
+                                    color: white;
+                                {% elif order.status == 'ready' %}
+                                    background-color: #28a745;
+                                    color: white;
+                                {% elif order.status == 'delivered' %}
+                                    background-color: #28a745;
+                                    color: white;
+                                {% elif order.status == 'rejected' %}
+                                    background-color: #dc3545;
+                                    color: white;
+                                {% elif order.status == 'cancelled' %}
+                                    background-color: #dc3545;
+                                    color: white;
+                                {% endif %}
+                            ">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>₹{{ order.total_amount }}</td>
+                        <td>
+                            <a href="{% url 'launderer:order_detail' order.order_id %}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center;">No recent orders</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="card">
+            <h3>Recent Reviews</h3>
+            {% for review in recent_reviews %}
+            <div style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <div>
+                        <strong>{{ review.customer.get_full_name|default:review.customer.username }}</strong>
+                    </div>
+                    <div>
+                        {% for i in "12345" %}
+                        <span style="color: {% if forloop.counter <= review.rating %}#ffc107{% else %}#ccc{% endif %};">★</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div style="margin-bottom: 5px;">{{ review.comment }}</div>
+                <div style="font-size: 0.8rem; color: #6c757d;">{{ review.created_at|date:"F d, Y" }}</div>
+            </div>
+            {% empty %}
+            <p>No reviews yet</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

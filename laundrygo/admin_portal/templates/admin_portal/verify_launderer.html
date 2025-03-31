@@ -1,0 +1,79 @@
+{% extends 'admin_portal/base.html' %}
+
+{% block title %}Verify Launderer - LaundryGo Admin{% endblock %}
+
+{% block page_title %}Verify Launderer{% endblock %}
+
+{% block content %}
+<div class="verify-container">
+    <div class="card">
+        <h2>Verify Laundromat Registration</h2>
+        
+        <div class="launderer-details" style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: flex-start;">
+                <div style="width: 150px; height: 150px; background-color: #f0f0f0; border-radius: 5px; display: flex; justify-content: center; align-items: center; margin-right: 20px;">
+                    {% if verification.launderer.user.profile_pic %}
+                    <img src="{{ verification.launderer.user.profile_pic.url }}" alt="Owner Image" style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px;">
+                    {% else %}
+                    <span>No Profile Image</span>
+                    {% endif %}
+                </div>
+                
+                <div style="flex: 1;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <th style="width: 150px; text-align: left; padding: 8px 0;">Owner Name:</th>
+                            <td>{{ verification.launderer.user.get_full_name|default:verification.launderer.user.username }}</td>
+                        </tr>
+                        <tr>
+                            <th style="width: 150px; text-align: left; padding: 8px 0;">Business Name:</th>
+                            <td>{{ verification.launderer.business_name }}</td>
+                        </tr>
+                        <tr>
+                            <th style="width: 150px; text-align: left; padding: 8px 0;">Phone:</th>
+                            <td>{{ verification.launderer.user.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th style="width: 150px; text-align: left; padding: 8px 0;">Email:</th>
+                            <td>{{ verification.launderer.user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th style="width: 150px; text-align: left; padding: 8px 0;">Address:</th>
+                            <td>{{ verification.launderer.user.address }}</td>
+                        </tr>
+                        <tr>
+                            <th style="width: 150px; text-align: left; padding: 8px 0;">Pincode:</th>
+                            <td>{{ verification.launderer.user.pincode }}</td>
+                        </tr>
+                        <tr>
+                            <th style="width: 150px; text-align: left; padding: 8px 0;">Registration Date:</th>
+                            <td>{{ verification.launderer.user.date_joined|date:"F d, Y" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.rejection_reason.id_for_label }}">Rejection Reason (if rejecting):</label>
+                {{ form.rejection_reason }}
+                <small class="form-text text-muted">{{ form.rejection_reason.help_text }}</small>
+                {% if form.rejection_reason.errors %}
+                <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                    {{ form.rejection_reason.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                <a href="{% url 'admin_portal:new_registrations' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

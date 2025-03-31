@@ -1,0 +1,132 @@
+{% extends 'launderer/base.html' %}
+
+{% block title %}Manage Working Hours - LaundryGo Launderer{% endblock %}
+
+{% block page_title %}Manage Working Hours{% endblock %}
+
+{% block extra_css %}
+<style>
+    .working-hours-form {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .day-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .day-row:last-child {
+        border-bottom: none;
+    }
+    
+    .day-name {
+        width: 120px;
+        font-weight: bold;
+    }
+    
+    .time-inputs {
+        display: flex;
+        flex-wrap: wrap;
+        flex: 1;
+        gap: 15px;
+        margin: 0 15px;
+    }
+    
+    .time-input {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .closed-checkbox {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+    
+    .closed-checkbox input {
+        margin-right: 5px;
+    }
+    
+    .form-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .day-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .day-name {
+            margin-bottom: 10px;
+        }
+        
+        .time-inputs {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .closed-checkbox {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Manage Working Hours</h2>
+    
+    <form method="post" class="working-hours-form">
+        {% csrf_token %}
+        
+        {% for hour in working_hours %}
+        <div class="day-row">
+            <div class="day-name">{{ hour.get_day_display }}</div>
+            
+            <div class="time-inputs">
+                <div class="time-input">
+                    <label for="open_time_{{ hour.day }}">Open Time:</label>
+                    <input type="time" id="open_time_{{ hour.day }}" name="open_time_{{ hour.day }}" class="form-control" value="{{ hour.open_time|time:'H:i' }}" {% if hour.is_closed %}disabled{% endif %}>
+                </div>
+                
+                <div class="time-input">
+                    <label for="close_time_{{ hour.day }}">Close Time:</label>
+                    <input type="time" id="close_time_{{ hour.day }}" name="close_time_{{ hour.day }}" class="form-control" value="{{ hour.close_time|time:'H:i' }}" {% if hour.is_closed %}disabled{% endif %}>
+                </div>
+            </div>
+            
+            <div class="closed-checkbox">
+                <input type="checkbox" id="is_closed_{{ hour.day }}" name="is_closed_{{ hour.day }}" {% if hour.is_closed %}checked{% endif %} onchange="toggleTimeInputs({{ hour.day }}, this.checked)">
+                <label for="is_closed_{{ hour.day }}">Closed</label>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="form-buttons">
+            <a href="{% url 'launderer:settings' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success">Save Working Hours</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleTimeInputs(day, isClosed) {
+        const openTimeInput = document.getElementById(`open_time_${day}`);
+        const closeTimeInput = document.getElementById(`close_time_${day}`);
+        
+        openTimeInput.disabled = isClosed;
+        closeTimeInput.disabled = isClosed;
+    }
+</script>
+{% endblock %}
+

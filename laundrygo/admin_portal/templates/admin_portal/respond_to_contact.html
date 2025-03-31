@@ -1,0 +1,49 @@
+{% extends 'admin_portal/base.html' %}
+
+{% block title %}Respond to Contact - LaundryGo Admin{% endblock %}
+
+{% block page_title %}Respond to Contact Message{% endblock %}
+
+{% block content %}
+<div class="respond-container">
+    <div class="card">
+        <h2>Respond to Contact Message</h2>
+        
+        <div class="message-details" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+            <div style="margin-bottom: 10px;">
+                <strong>From:</strong> {{ contact_message.name }} {% if contact_message.is_registered_user %}(Registered User){% endif %}
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong>Email:</strong> {{ contact_message.email }}
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong>Subject:</strong> {{ contact_message.subject }}
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong>Date:</strong> {{ contact_message.created_at|date:"F d, Y H:i" }}
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong>Message:</strong>
+                <div style="padding: 10px; background-color: white; border-radius: 5px; margin-top: 5px;">
+                    {{ contact_message.message }}
+                </div>
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="response">Your Response:</label>
+                <textarea id="response" name="response" class="form-control" rows="6" required></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-success">Send Response</button>
+                <a href="{% url 'admin_portal:manage_contact_messages' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,76 @@
+{% extends 'admin_portal/base.html' %}
+
+{% block title %}New Registrations - LaundryGo Admin{% endblock %}
+
+{% block page_title %}New Registrations{% endblock %}
+
+{% block content %}
+<div class="registrations-container">
+    <div class="card">
+        <h2>Pending Laundromat Verifications</h2>
+        <p>Review and approve or reject new laundromat registrations.</p>
+        
+        {% if page_obj %}
+        {% for verification in page_obj %}
+        <div class="verification-card" style="background-color: #222; color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: flex-start;">
+                <div style="width: 100px; height: 100px; background-color: #333; border-radius: 5px; display: flex; justify-content: center; align-items: center; margin-right: 20px;">
+                    {% if verification.launderer.user.profile_pic %}
+                    <img src="{{ verification.launderer.user.profile_pic.url }}" alt="Owner Image" style="width: 100%; height: 100%; object-fit: cover; border-radius: 5px;">
+                    {% else %}
+                    <span>Owner Image</span>
+                    {% endif %}
+                </div>
+                
+                <div style="flex: 1;">
+                    <div style="margin-bottom: 5px;">
+                        <strong>Owner Name:</strong> {{ verification.launderer.user.get_full_name|default:verification.launderer.user.username }}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Business Name:</strong> {{ verification.launderer.business_name }}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Phone:</strong> {{ verification.launderer.user.phone }}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Email:</strong> {{ verification.launderer.user.email }}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>Location:</strong> {{ verification.launderer.user.address }}
+                    </div>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="{% url 'admin_portal:verify_launderer' verification.id %}" class="btn btn-success" style="text-align: center;">Confirm</a>
+                    <a href="{% url 'admin_portal:verify_launderer' verification.id %}" class="btn btn-danger" style="text-align: center;">Reject</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination" style="display: flex; justify-content: center; list-style: none; margin-top: 20px;">
+            {% if page_obj.has_previous %}
+            <a href="?page=1" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">previous</a>
+            {% endif %}
+            
+            <span style="margin: 0 5px; padding: 5px 10px;">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">last &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div style="text-align: center; padding: 30px;">
+            <p>No pending verifications at the moment.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1105 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Schedule Laundry - {{ launderer.business_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .scheduling-container {
+      background-color: var(--secondary-color);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -10px;
+      gap: 15px;
+  }
+  
+  .form-col {
+      flex: 1;
+      padding: 0 10px;
+      min-width: 250px;
+  }
+  
+  .form-group {
+      margin-bottom: 20px;
+  }
+  
+  .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--primary-color);
+  }
+  
+  .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+  }
+  
+  .form-control:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(74, 93, 80, 0.2);
+  }
+  
+  .cloth-table {
+      width: 100%;
+      margin-top: 25px;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .cloth-table th, .cloth-table td {
+      padding: 14px;
+  }
+  
+  .cloth-table th {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+  }
+  
+  .cloth-table tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .cloth-table tr:nth-child(odd) {
+      background-color: rgba(240, 215, 140, 0.5);
+  }
+  
+  .quantity-input {
+      width: 70px;
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+  }
+  
+  .schedule-btn {
+      display: block;
+      width: 200px;
+      padding: 14px;
+      background-color: var(--primary-color);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 6px;
+      margin-top: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      float: right;
+      transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .schedule-btn:hover {
+      background-color: #3a4a40;
+      transform: translateY(-2px);
+  }
+  
+  .schedule-btn:active {
+      transform: translateY(0);
+  }
+  
+  /* Service Selection Styles */
+  .services-section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .services-section h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 8px;
+  }
+  
+  .services-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+  }
+  
+  .service-card {
+      flex: 1;
+      min-width: 200px;
+      background-color: white;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+  }
+  
+  .service-card:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .service-card.selected {
+      border-color: var(--primary-color);
+      background-color: rgba(74, 93, 80, 0.1);
+  }
+  
+  .service-card input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+  }
+  
+  .service-icon {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      display: block;
+      text-align: center;
+  }
+  
+  .service-name {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+      text-align: center;
+  }
+  
+  .service-description {
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+  }
+  
+  .service-unavailable {
+      opacity: 0.5;
+      cursor: not-allowed;
+  }
+  
+  .service-unavailable:hover {
+      transform: none;
+      border-color: #eee;
+  }
+  
+  /* Pickup/Delivery Options */
+  .pickup-delivery-section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .pickup-delivery-section h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 8px;
+  }
+  
+  .pickup-delivery-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+  }
+  
+  .pickup-option {
+      flex: 1;
+      min-width: 200px;
+      background-color: white;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+  }
+  
+  .pickup-option:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .pickup-option.selected {
+      border-color: var(--primary-color);
+      background-color: rgba(74, 93, 80, 0.1);
+  }
+  
+  .pickup-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+  }
+  
+  .pickup-icon {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      display: block;
+      text-align: center;
+  }
+  
+  .pickup-name {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+      text-align: center;
+  }
+  
+  .pickup-description {
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+  }
+  
+  /* Address Selection */
+  .address-section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .address-section h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 8px;
+  }
+  
+  .address-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+  }
+  
+  .address-card {
+      flex: 1;
+      min-width: 300px;
+      background-color: white;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+  }
+  
+  .address-card:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .address-card.selected {
+      border-color: var(--primary-color);
+      background-color: rgba(74, 93, 80, 0.1);
+  }
+  
+  .address-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+  }
+  
+  .address-icon {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+      display: block;
+      float: left;
+      margin-right: 15px;
+  }
+  
+  .address-details {
+      font-size: 0.9rem;
+      color: #333;
+  }
+  
+  .address-label {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+  }
+  
+  /* Delivery Information */
+  .delivery-info {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .delivery-info h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 8px;
+  }
+  
+  .delivery-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+  }
+  
+  .delivery-detail {
+      flex: 1;
+      min-width: 200px;
+      padding: 15px;
+      background-color: white;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .delivery-label {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--primary-color);
+  }
+  
+  .delivery-value {
+      font-size: 1.3rem;
+      color: #333;
+  }
+  
+  .free-delivery-note {
+      margin-top: 15px;
+      font-style: italic;
+      color: var(--success-color);
+      text-align: center;
+      font-weight: 600;
+      background-color: rgba(40, 167, 69, 0.1);
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 4px solid var(--success-color);
+  }
+  
+  /* Order Summary */
+  .order-summary {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 25px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .order-summary h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 8px;
+  }
+  
+  .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+  }
+  
+  .summary-row:last-child {
+      border-bottom: none;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      padding-top: 15px;
+      margin-top: 5px;
+      border-top: 2px solid var(--primary-color);
+  }
+  
+  /* Warning Message */
+  .warning-message {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid #ffc107;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Image Upload */
+  .image-upload {
+      margin-bottom: 20px;
+  }
+  
+  .image-upload-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--primary-color);
+  }
+  
+  .image-preview {
+      margin-top: 10px;
+      max-width: 300px;
+      max-height: 200px;
+      border-radius: 4px;
+      display: none;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+      .form-col {
+          flex: 100%;
+      }
+      
+      .service-card, .pickup-option, .delivery-detail, .address-card {
+          min-width: 100%;
+      }
+      
+      .cloth-table {
+          display: block;
+          overflow-x: auto;
+      }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>Schedule Laundry with {{ launderer.business_name }}</h2>
+
+{% if distance > launderer.delivery_radius %}
+<div class="warning-message">
+    <strong>Warning:</strong> You are {{ distance }} km away from this launderer, which is outside their delivery radius of {{ launderer.delivery_radius }} km. 
+    You may need to arrange your own transportation or choose a closer launderer.
+</div>
+{% endif %}
+
+<!-- Add a note about order confirmation in the scheduling page -->
+<div class="alert alert-info" style="margin-top: 20px; margin-bottom: 20px;">
+    <i class="fas fa-info-circle"></i> 
+    <strong>Note:</strong> Your order will be placed in a pending state. The launderer will need to confirm your order before it can be processed. You will receive a notification once your order is confirmed or rejected.
+</div>
+
+<div class="scheduling-container">
+    <form method="post" id="schedulingForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="items_data" id="itemsData" value="">
+        <input type="hidden" name="selected_services" id="selectedServicesInput" value="">
+        <input type="hidden" name="selected_address_id" id="selectedAddressId" value="{{ user.id }}">
+        
+        <!-- Service Selection Section -->
+        <div class="services-section">
+            <h3>Select Services</h3>
+            <div class="services-grid">
+                {% for service_code, service_name in form.fields.service_type.choices %}
+                    {% if service_code in available_services %}
+                    <label class="service-card" data-service="{{ service_code }}">
+                        <input type="checkbox" name="service_types" value="{{ service_code }}" class="service-checkbox">
+                        <span class="service-icon">
+                            {% if service_code == 'washing' %}
+                                <i class="fas fa-tshirt"></i>
+                            {% elif service_code == 'dry_cleaning' %}
+                                <i class="fas fa-wind"></i>
+                            {% elif service_code == 'ironing' %}
+                                <i class="fas fa-iron"></i>
+                            {% elif service_code == 'full_service' %}
+                                <i class="fas fa-check-double"></i>
+                            {% endif %}
+                        </span>
+                        <div class="service-name">{{ service_name }}</div>
+                        <div class="service-description">
+                            {% if service_code == 'washing' %}
+                                Basic washing services for your clothes
+                            {% elif service_code == 'dry_cleaning' %}
+                                Professional dry cleaning for delicate fabrics
+                            {% elif service_code == 'ironing' %}
+                                Ironing and pressing services
+                            {% elif service_code == 'full_service' %}
+                                Complete laundry service including washing, drying, and ironing
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% else %}
+                    <div class="service-card service-unavailable">
+                        <span class="service-icon">
+                            {% if service_code == 'washing' %}
+                                <i class="fas fa-tshirt"></i>
+                            {% elif service_code == 'dry_cleaning' %}
+                                <i class="fas fa-wind"></i>
+                            {% elif service_code == 'ironing' %}
+                                <i class="fas fa-iron"></i>
+                            {% elif service_code == 'full_service' %}
+                                <i class="fas fa-check-double"></i>
+                            {% endif %}
+                        </span>
+                        <div class="service-name">{{ service_name }}</div>
+                        <div class="service-description">This service is not available</div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Pickup/Delivery Options -->
+        <div class="pickup-delivery-section">
+            <h3>Select Pickup/Delivery Option</h3>
+            <div class="pickup-delivery-options">
+                <label class="pickup-option" data-option="pickup">
+                    <input type="radio" name="pickup_delivery" value="pickup" class="pickup-radio" {% if form.pickup_delivery.value == 'pickup' %}checked{% endif %}>
+                    <span class="pickup-icon">
+                        <i class="fas fa-truck-pickup"></i>
+                    </span>
+                    <div class="pickup-name">Pickup Only</div>
+                    <div class="pickup-description">We'll pick up your laundry from your location</div>
+                </label>
+                
+                <label class="pickup-option" data-option="drop_off">
+                    <input type="radio" name="pickup_delivery" value="drop_off" class="pickup-radio" {% if form.pickup_delivery.value == 'drop_off' %}checked{% endif %}>
+                    <span class="pickup-icon">
+                        <i class="fas fa-store"></i>
+                    </span>
+                    <div class="pickup-name">Drop Off</div>
+                    <div class="pickup-description">You'll drop off your laundry at the launderer's location</div>
+                </label>
+                
+                <label class="pickup-option" data-option="both">
+                    <input type="radio" name="pickup_delivery" value="both" class="pickup-radio" {% if form.pickup_delivery.value == 'both' %}checked{% endif %}>
+                    <span class="pickup-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </span>
+                    <div class="pickup-name">Both</div>
+                    <div class="pickup-description">We'll pick up and deliver your laundry</div>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Address Selection -->
+        <div class="address-section" id="addressSection">
+            <h3>Select Address for Pickup/Delivery</h3>
+            <div class="address-options">
+                <label class="address-card selected">
+                    <input type="radio" name="address" value="{{ user.id }}" checked class="address-radio">
+                    <span class="address-icon">
+                        <i class="fas fa-home"></i>
+                    </span>
+                    <div class="address-label">Default Address</div>
+                    <div class="address-details">
+                        {{ user.address }}<br>
+                        Pincode: {{ user.pincode }}
+                        {% if user.delivery_instructions %}
+                        <br>Instructions: {{ user.delivery_instructions }}
+                        {% endif %}
+                    </div>
+                </label>
+                
+                {% for address in saved_addresses %}
+                <label class="address-card">
+                    <input type="radio" name="address" value="{{ address.id }}" class="address-radio">
+                    <span class="address-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </span>
+                    <div class="address-label">{{ address.label }}</div>
+                    <div class="address-details">
+                        {{ address.address }}<br>
+                        Pincode: {{ address.pincode }}
+                        {% if address.instructions %}
+                        <br>Instructions: {{ address.instructions }}
+                        {% endif %}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if distance > 0 %}
+        <div class="delivery-info" id="deliveryInfo">
+            <h3>Delivery Information</h3>
+            <div class="delivery-details">
+                <div class="delivery-detail">
+                    <div class="delivery-label">Distance:</div>
+                    <div class="delivery-value">{{ distance }} km</div>
+                </div>
+                
+                <div class="delivery-detail">
+                    <div class="delivery-label">Base Delivery Charge:</div>
+                    <div class="delivery-value">₹{{ launderer.base_delivery_charge }}</div>
+                </div>
+                
+                <div class="delivery-detail">
+                    <div class="delivery-label">Per km Charge:</div>
+                    <div class="delivery-value">₹{{ launderer.per_km_charge }}</div>
+                </div>
+                
+                <div class="delivery-detail">
+                    <div class="delivery-label">Estimated Delivery Charge:</div>
+                    <div class="delivery-value">₹{{ delivery_charge }}</div>
+                </div>
+            </div>
+            
+            <div class="free-delivery-note">
+                Free delivery on orders above ₹{{ launderer.min_order_free_delivery }}!
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="{{ form.pickup_date.id_for_label }}">Select Pickup Date</label>
+                    {{ form.pickup_date }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.pickup_slot.id_for_label }}">Select Pickup Slot</label>
+                    {{ form.pickup_slot }}
+                </div>
+            </div>
+            
+            <div class="form-col">
+                <div class="form-group" id="deliveryDateGroup">
+                    <label for="{{ form.delivery_date.id_for_label }}">Select Delivery/Completion Date</label>
+                    {{ form.delivery_date }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.payment_method.id_for_label }}">Select Mode of Payment</label>
+                    {{ form.payment_method }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.special_instructions.id_for_label }}">Special Instructions</label>
+            {{ form.special_instructions }}
+        </div>
+        
+        <div class="form-group image-upload">
+            <label class="image-upload-label" for="laundry_image">Attach Image of Clothes (Optional)</label>
+            <input type="file" name="laundry_image" id="laundry_image" class="form-control" accept="image/*">
+            <img id="imagePreview" class="image-preview" src="#" alt="Image Preview">
+        </div>
+        
+        <table class="cloth-table">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Cloth Type</th>
+                    <th>Cloth Name</th>
+                    <th>Service Type</th>
+                    <th>Price Per cloth (Rs.)</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="clothItemsBody">
+                <!-- Items will be loaded dynamically based on selected services -->
+                <tr>
+                    <td colspan="7" class="text-center">Please select at least one service to view available items</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <div class="summary-row">
+                <div>Items Subtotal:</div>
+                <div id="itemsSubtotal">₹0.00</div>
+            </div>
+            <div class="summary-row" id="deliveryChargeRow">
+                <div>Delivery Charge:</div>
+                <div id="deliveryCharge">₹{{ delivery_charge }}</div>
+            </div>
+            <div class="summary-row">
+                <div>Total Amount:</div>
+                <div id="totalAmount">₹{{ delivery_charge }}</div>
+            </div>
+        </div>
+        
+        <button type="submit" class="schedule-btn">Schedule Laundry</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store all cloth items from the server
+        const allClothItems = JSON.parse('{{ cloth_items_json|escapejs }}');
+        
+        // Elements
+        const serviceCheckboxes = document.querySelectorAll('.service-checkbox');
+        const serviceCards = document.querySelectorAll('.service-card:not(.service-unavailable)');
+        const pickupOptions = document.querySelectorAll('.pickup-option');
+        const pickupRadios = document.querySelectorAll('.pickup-radio');
+        const addressCards = document.querySelectorAll('.address-card');
+        const addressRadios = document.querySelectorAll('.address-radio');
+        const clothItemsBody = document.getElementById('clothItemsBody');
+        const selectedServicesInput = document.getElementById('selectedServicesInput');
+        const selectedAddressId = document.getElementById('selectedAddressId');
+        const itemsDataInput = document.getElementById('itemsData');
+        const form = document.getElementById('schedulingForm');
+        const addressSection = document.getElementById('addressSection');
+        const deliveryInfo = document.getElementById('deliveryInfo');
+        const deliveryDateGroup = document.getElementById('deliveryDateGroup');
+        const deliveryChargeRow = document.getElementById('deliveryChargeRow');
+        const imageInput = document.getElementById('laundry_image');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        // Order summary elements
+        const itemsSubtotalEl = document.getElementById('itemsSubtotal');
+        const deliveryChargeEl = document.getElementById('deliveryCharge');
+        const totalAmountEl = document.getElementById('totalAmount');
+        
+        // Delivery charge from backend
+        const deliveryCharge = parseFloat('{{ delivery_charge }}');
+        
+        // Min order for free delivery
+        const minOrderFreeDelivery = parseFloat('{{ launderer.min_order_free_delivery }}');
+        
+        // Service card selection
+        serviceCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const checkbox = this.querySelector('.service-checkbox');
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('selected', checkbox.checked);
+                updateSelectedServices();
+                updateClothItems();
+            });
+        });
+        
+        // Pickup option selection
+        pickupOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const radio = this.querySelector('.pickup-radio');
+                radio.checked = true;
+                
+                // Remove selected class from all options
+                pickupOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Show/hide address section based on pickup option
+                const pickupOption = this.dataset.option;
+                if (pickupOption === 'drop_off') {
+                    addressSection.style.display = 'none';
+                    if (deliveryInfo) deliveryInfo.style.display = 'none';
+                    deliveryChargeRow.style.display = 'none';
+                    deliveryDateGroup.querySelector('label').textContent = 'Select Completion Date';
+                } else {
+                    addressSection.style.display = 'block';
+                    if (deliveryInfo) deliveryInfo.style.display = 'block';
+                    deliveryChargeRow.style.display = 'flex';
+                    deliveryDateGroup.querySelector('label').textContent = pickupOption === 'both' ? 
+                        'Select Delivery Date' : 'Select Completion Date';
+                }
+                
+                updateDeliveryCharge();
+            });
+        });
+        
+        // Address card selection
+        addressCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const radio = this.querySelector('.address-radio');
+                radio.checked = true;
+                
+                // Remove selected class from all cards
+                addressCards.forEach(c => c.classList.remove('selected'));
+                
+                // Add selected class to clicked card
+                this.classList.add('selected');
+                
+                // Update selected address ID
+                selectedAddressId.value = radio.value;
+            });
+        });
+        
+        // Image preview
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.src = '#';
+                imagePreview.style.display = 'none';
+            }
+        });
+        
+        // Initialize pickup option selection
+        pickupRadios.forEach(radio => {
+            if (radio.checked) {
+                radio.closest('.pickup-option').classList.add('selected');
+                
+                // Show/hide address section based on initial pickup option
+                const pickupOption = radio.value;
+                if (pickupOption === 'drop_off') {
+                    addressSection.style.display = 'none';
+                    if (deliveryInfo) deliveryInfo.style.display = 'none';
+                    deliveryChargeRow.style.display = 'none';
+                    deliveryDateGroup.querySelector('label').textContent = 'Select Completion Date';
+                } else {
+                    addressSection.style.display = 'block';
+                    if (deliveryInfo) deliveryInfo.style.display = 'block';
+                    deliveryChargeRow.style.display = 'flex';
+                    deliveryDateGroup.querySelector('label').textContent = pickupOption === 'both' ? 
+                        'Select Delivery Date' : 'Select Completion Date';
+                }
+            }
+        });
+        
+        // Update selected services
+        function updateSelectedServices() {
+            const selectedServices = [];
+            serviceCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedServices.push(checkbox.value);
+                }
+            });
+            
+            selectedServicesInput.value = JSON.stringify(selectedServices);
+            return selectedServices;
+        }
+        
+        // Filter and display cloth items based on selected services
+        function updateClothItems() {
+            const selectedServices = updateSelectedServices();
+            
+            if (selectedServices.length === 0) {
+                clothItemsBody.innerHTML = '<tr><td colspan="7" class="text-center">Please select at least one service to view available items</td></tr>';
+                return;
+            }
+            
+            // Filter items that match any of the selected services or have no specific service type
+            const filteredItems = allClothItems.filter(item => 
+                !item.service_type || 
+                item.service_type === '' || 
+                selectedServices.includes(item.service_type)
+            );
+            
+            if (filteredItems.length === 0) {
+                clothItemsBody.innerHTML = '<tr><td colspan="7" class="text-center">No items available for the selected services</td></tr>';
+                return;
+            }
+            
+            // Generate HTML for filtered items
+            let html = '';
+            filteredItems.forEach(item => {
+                html += `
+                <tr>
+                    <td>
+                        <input type="checkbox" class="item-checkbox" data-id="${item.id}" data-price="${item.price}">
+                    </td>
+                    <td>${item.cloth_type_name}</td>
+                    <td>${item.cloth_name}</td>
+                    <td>${item.service_type || 'All Services'}</td>
+                    <td>₹${item.price}</td>
+                    <td>
+                        <input type="number" class="quantity-input" min="1" value="1" disabled data-price="${item.price}">
+                    </td>
+                    <td class="item-subtotal">₹0.00</td>
+                </tr>
+                `;
+            });
+            
+            clothItemsBody.innerHTML = html;
+            
+            // Add event listeners to new checkboxes and quantity inputs
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.addEventListener('change', function() {
+                    quantityInputs[index].disabled = !this.checked;
+                    if (!this.checked) {
+                        quantityInputs[index].value = 1;
+                        document.querySelectorAll('.item-subtotal')[index].textContent = '₹0.00';
+                    } else {
+                        updateSubtotal(index);
+                    }
+                    updateOrderSummary();
+                });
+            });
+            
+            quantityInputs.forEach((input, index) => {
+                input.addEventListener('change', function() {
+                    if (parseInt(this.value) < 1) {
+                        this.value = 1;
+                    }
+                    updateSubtotal(index);
+                    updateOrderSummary();
+                });
+            });
+        }
+        
+        // Update subtotal for an item
+        function updateSubtotal(index) {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            const subtotalCells = document.querySelectorAll('.item-subtotal');
+            
+            if (!checkboxes[index].checked) return;
+            
+            const price = parseFloat(quantityInputs[index].dataset.price);
+            const quantity = parseInt(quantityInputs[index].value);
+            const subtotal = price * quantity;
+            
+            subtotalCells[index].textContent = `₹${subtotal.toFixed(2)}`;
+        }
+        
+        // Update order summary
+        function updateOrderSummary() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            
+            let itemsSubtotal = 0;
+            
+            // Calculate items subtotal
+            checkboxes.forEach((checkbox, index) => {
+                if (checkbox.checked) {
+                    const price = parseFloat(quantityInputs[index].dataset.price);
+                    const quantity = parseInt(quantityInputs[index].value);
+                    itemsSubtotal += price * quantity;
+                }
+            });
+            
+            // Update delivery charge based on order total and pickup/delivery option
+            let finalDeliveryCharge = 0;
+            const pickupDeliveryOption = document.querySelector('.pickup-radio:checked').value;
+            
+            if (pickupDeliveryOption === 'pickup' || pickupDeliveryOption === 'both') {
+                // Apply free delivery if order exceeds minimum
+                if (itemsSubtotal >= minOrderFreeDelivery) {
+                    finalDeliveryCharge = 0;
+                } else {
+                    finalDeliveryCharge = deliveryCharge;
+                }
+            }
+            
+            // Update summary display
+            itemsSubtotalEl.textContent = `₹${itemsSubtotal.toFixed(2)}`;
+            deliveryChargeEl.textContent = `₹${finalDeliveryCharge.toFixed(2)}`;
+            totalAmountEl.textContent = `₹${(itemsSubtotal + finalDeliveryCharge).toFixed(2)}`;
+        }
+        
+        // Update delivery charge when pickup/delivery option changes
+        function updateDeliveryCharge() {
+            updateOrderSummary();
+        }
+        
+        // Collect selected items data before form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check if at least one service is selected
+            const selectedServices = updateSelectedServices();
+            if (selectedServices.length === 0) {
+                alert('Please select at least one service');
+                return;
+            }
+            
+            // Check if at least one item is selected
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const quantityInputs = document.querySelectorAll('.quantity-input');
+            
+            const selectedItems = [];
+            let hasSelectedItems = false;
+            
+            checkboxes.forEach((checkbox, index) => {
+                if (checkbox.checked) {
+                    hasSelectedItems = true;
+                    selectedItems.push({
+                        id: checkbox.dataset.id,
+                        quantity: quantityInputs[index].value,
+                        price: checkbox.dataset.price
+                    });
+                }
+            });
+            
+            if (!hasSelectedItems) {
+                alert('Please select at least one item');
+                return;
+            }
+            
+            // Check if pickup date is selected
+            const pickupDate = document.querySelector('input[name="pickup_date"]').value;
+            if (!pickupDate) {
+                alert('Please select a pickup date');
+                return;
+            }
+            
+            // Check if delivery date is selected
+            const deliveryDate = document.querySelector('input[name="delivery_date"]').value;
+            if (!deliveryDate) {
+                alert('Please select a delivery date');
+                return;
+            }
+            
+            // Check if pickup slot is selected
+            const pickupSlot = document.querySelector('select[name="pickup_slot"]').value;
+            if (!pickupSlot) {
+                alert('Please select a pickup slot');
+                return;
+            }
+            
+            // Check if payment method is selected
+            const paymentMethod = document.querySelector('select[name="payment_method"]').value;
+            if (!paymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+            
+            // Set the items data
+            itemsDataInput.value = JSON.stringify(selectedItems);
+            
+            // Log form data for debugging
+            console.log("Form data:", {
+                selectedServices: selectedServicesInput.value,
+                itemsData: itemsDataInput.value,
+                selectedAddressId: selectedAddressId.value,
+                pickupDate: pickupDate,
+                deliveryDate: deliveryDate,
+                pickupSlot: pickupSlot,
+                paymentMethod: paymentMethod
+            });
+            
+            // Submit the form
+            form.submit();
+        });
+        
+        // Initialize the page
+        updateSelectedServices();
+        updateClothItems();
+        
+        // Set initial selected state for pickup options
+        pickupRadios.forEach(radio => {
+            if (radio.checked) {
+                radio.closest('.pickup-option').classList.add('selected');
+            }
+        });
+        
+        // Initialize order summary
+        updateOrderSummary();
+    });
+</script>
+{% endblock %}
+

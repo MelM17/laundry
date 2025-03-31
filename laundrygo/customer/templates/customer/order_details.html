@@ -1,0 +1,108 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Order #{{ order.id }} Details</h3>
+                    <span class="badge 
+                        {% if order.status == 'Pending Acceptance' %}bg-warning
+                        {% elif order.status == 'Accepted' %}bg-info
+                        {% elif order.status == 'In Progress' %}bg-primary
+                        {% elif order.status == 'Completed' %}bg-success
+                        {% elif order.status == 'Rejected' %}bg-danger
+                        {% elif order.status == 'Cancelled' %}bg-secondary
+                        {% endif %}">
+                        {{ order.status }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% if order.status == 'pending_acceptance' %}
+                    <div class="alert alert-warning">
+                        <strong>Order Status: Pending Acceptance</strong>
+                        <p>Your order is waiting for the launderer to accept it. You'll be notified once it's accepted.</p>
+                    </div>
+                    {% elif order.status == 'confirmed' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Your order has been confirmed by the launderer. It will be picked up as scheduled.
+                    </div>
+                    {% endif %}
+
+                    {% if order.status == 'rejected' %}
+                    <div class="rejection-reason">
+                        <strong>Rejection Reason:</strong> {{ order.rejection_reason }}
+                    </div>
+                    {% endif %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Launderer Information</h5>
+                            {% if order.launderer %}
+                            <p><strong>Business:</strong> {{ order.launderer.business_name }}</p>
+                            <p><strong>Address:</strong> {{ order.launderer.address }}</p>
+                            <p><strong>Phone:</strong> {{ order.launderer.phone_number }}</p>
+                            {% else %}
+                            <p>No launderer assigned yet.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Order Information</h5>
+                            <p><strong>Created:</strong> {{ order.created_at|date:"M d, Y g:i A" }}</p>
+                            <p><strong>Pickup:</strong> {{ order.pickup_date|date:"M d, Y" }} at {{ order.pickup_time|time:"g:i A" }}</p>
+                            <p><strong>Delivery:</strong> {{ order.delivery_date|date:"M d, Y" }} at {{ order.delivery_time|time:"g:i A" }}</p>
+                        </div>
+                    </div>
+                    
+                    <h5>Delivery Address</h5>
+                    <p>{{ order.address }}</p>
+                    
+                    {% if order.special_instructions %}
+                    <h5>Special Instructions</h5>
+                    <p>{{ order.special_instructions }}</p>
+                    {% endif %}
+                    
+                    <h5>Order Items</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.orderitem_set.all %}
+                                <tr>
+                                    <td>{{ item.item_type }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.price_per_item|default:"0.00" }}</td>
+                                    <td>${{ item.subtotal|default:"0.00" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">Total:</th>
+                                    <th>${{ order.total_price }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4">
+                        {% if order.status == 'Pending Acceptance' %}
+                        <a href="{% url 'customer:cancel_order' order.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</a>
+                        {% endif %}
+                        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

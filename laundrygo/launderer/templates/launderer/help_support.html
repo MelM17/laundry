@@ -1,0 +1,80 @@
+{% extends 'launderer/base.html' %}
+
+{% block title %}Help & Support - LaundryGo Launderer{% endblock %}
+
+{% block page_title %}HERE, To help you{% endblock %}
+
+{% block content %}
+<div class="help-support-container">
+    <div class="card">
+        <h2>Submit a Query</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.query.id_for_label }}">Queries</label>
+                {{ form.query }}
+                {% if form.query.errors %}
+                <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
+                    {{ form.query.errors }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; justify-content: center; margin-top: 20px;">
+                <button type="submit" class="btn" style="width: 100%;">Submit</button>
+            </div>
+        </form>
+        
+        <div style="text-align: center; margin-top: 10px;">
+            <a href="{% url 'launderer:dashboard' %}" class="btn btn-secondary" style="display: inline-block;">Back</a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Previous Queries</h2>
+        
+        {% for query in support_queries %}
+        <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px; border-left: 5px solid {% if query.is_resolved %}#28a745{% else %}#ffc107{% endif %};">
+            <div style="margin-bottom: 10px;">
+                <strong>Query:</strong> {{ query.query }}
+            </div>
+            <div style="margin-bottom: 5px; font-size: 0.9rem; color: #6c757d;">
+                <strong>Date:</strong> {{ query.created_at|date:"F d, Y H:i" }}
+            </div>
+            <div style="margin-bottom: 5px; font-size: 0.9rem;">
+                <strong>Status:</strong> 
+                <span style="
+                    display: inline-block;
+                    padding: 3px 8px;
+                    border-radius: 3px;
+                    font-size: 0.8rem;
+                    {% if query.is_resolved %}
+                        background-color: #28a745;
+                        color: white;
+                    {% else %}
+                        background-color: #ffc107;
+                        color: #212529;
+                    {% endif %}
+                ">
+                    {% if query.is_resolved %}Resolved{% else %}Pending{% endif %}
+                </span>
+            </div>
+            
+            {% if query.response %}
+            <div style="margin-top: 10px; padding: 10px; background-color: #e9ecef; border-radius: 5px;">
+                <strong>Response:</strong> {{ query.response }}
+                <div style="margin-top: 5px; font-size: 0.8rem; color: #6c757d;">
+                    <strong>Resolved on:</strong> {{ query.resolved_at|date:"F d, Y H:i" }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p style="text-align: center;">You haven't submitted any queries yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

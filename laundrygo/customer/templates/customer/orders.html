@@ -1,0 +1,163 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}My Orders - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-card {
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .order-header {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .order-id {
+        font-weight: bold;
+    }
+    
+    .order-status {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+    
+    .status-pending {
+        background-color: #ffc107;
+        color: #000;
+    }
+    
+    .status-confirmed {
+        background-color: #17a2b8;
+        color: #fff;
+    }
+    
+    .status-picked_up {
+        background-color: #6c757d;
+        color: #fff;
+    }
+    
+    .status-processing {
+        background-color: #007bff;
+        color: #fff;
+    }
+    
+    .status-ready {
+        background-color: #28a745;
+        color: #fff;
+    }
+    
+    .status-delivered {
+        background-color: #28a745;
+        color: #fff;
+    }
+    
+    .status-cancelled {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    
+    .order-body {
+        padding: 15px;
+    }
+    
+    .order-info {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .order-info-item {
+        width: 50%;
+        margin-bottom: 10px;
+    }
+    
+    .order-info-label {
+        font-weight: bold;
+        display: block;
+    }
+    
+    .order-actions {
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .order-btn {
+        padding: 8px 15px;
+        margin-left: 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    
+    .view-btn {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .view-btn:hover {
+        background-color: #3a4a40;
+    }
+    
+    .no-orders {
+        text-align: center;
+        padding: 30px;
+        background-color: white;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2>My Orders</h2>
+
+{% if orders %}
+{% for order in orders %}
+<div class="order-card">
+    <div class="order-header">
+        <div class="order-id">Order #{{ order.order_id|truncatechars:8 }}</div>
+        <div class="order-status status-{{ order.status }}">{{ order.get_status_display }}</div>
+    </div>
+    <div class="order-body">
+        <div class="order-info">
+            <div class="order-info-item">
+                <span class="order-info-label">Laundromat:</span>
+                {{ order.launderer.business_name }}
+            </div>
+            <div class="order-info-item">
+                <span class="order-info-label">Order Date:</span>
+                {{ order.created_at|date:"F d, Y" }}
+            </div>
+            <div class="order-info-item">
+                <span class="order-info-label">Service Type:</span>
+                {{ order.get_service_type_display }}
+            </div>
+            <div class="order-info-item">
+                <span class="order-info-label">Total Amount:</span>
+                ₹{{ order.total_amount }}
+            </div>
+        </div>
+        <div class="order-actions">
+            <a href="{% url 'customer:order_details' order.order_id %}" class="order-btn view-btn">View Details</a>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="no-orders">
+    <h3>You don't have any orders yet</h3>
+    <p>Start by finding a launderer and scheduling your laundry service.</p>
+    <a href="{% url 'customer:dashboard' %}" class="btn">Find Launderers</a>
+</div>
+{% endif %}
+{% endblock %}

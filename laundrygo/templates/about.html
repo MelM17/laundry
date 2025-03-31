@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About LaundryGo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            background-color: rgb(77, 85, 72);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section h2 {
+            color: rgb(77, 85, 72);
+            border-bottom: 2px solid #f0d78c;
+            padding-bottom: 10px;
+        }
+        
+        .team-members {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .team-member {
+            flex: 0 0 calc(25% - 20px);
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .team-member img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        
+        .team-member h3 {
+            margin: 10px 0 5px;
+            color: #333;
+        }
+        
+        .team-member p {
+            margin: 5px 0;
+            color: #666;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px 0;
+            background-color: #f0d78c;
+        }
+        
+        .footer a {
+            color: rgb(77, 85, 72);
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .team-member {
+                flex: 0 0 calc(50% - 20px);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .team-member {
+                flex: 0 0 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>About LaundryGo</h1>
+        <p>Connecting You Online</p>
+    </div>
+    
+    <div class="container">
+        <div class="section">
+            <h2>Our Mission</h2>
+            <p>LaundryGo is a revolutionary platform designed to connect customers with laundry service providers in their area. Our mission is to simplify the laundry process, save time for busy individuals, and provide a reliable source of income for laundry service providers.</p>
+            <p>We believe that everyone deserves access to convenient, affordable, and high-quality laundry services. By leveraging technology, we're making this possible while creating opportunities for small business owners in the laundry industry.</p>
+        </div>
+        
+        <div class="section">
+            <h2>How It Works</h2>
+            <p>LaundryGo provides a seamless experience for both customers and laundry service providers:</p>
+            <ul>
+                <li><strong>For Customers:</strong> Browse nearby laundromats, schedule pickups, track orders, and pay securely online.</li>
+                <li><strong>For Laundromats:</strong> Manage orders, track customer preferences, and grow your business with our platform.</li>
+            </ul>
+         </div>
+        
+        <div class="section">
+            <h2>Our Team</h2>
+            <p>LaundryGo was created by a team of passionate developers committed to solving everyday problems through technology.</p>
+            
+            <div class="team-members">
+                <div class="team-member">
+                    <img src="/static/images/team-member-1.jpg" alt="Team Member 1">
+                    <h3>Team Member 1</h3>
+                    <p>Lead Developer</p>
+                    <p>Responsible for backend development and database design.</p>
+                </div>
+                
+                <div class="team-member">
+                    <img src="/static/images/team-member-2.jpg" alt="Team Member 2">
+                    <h3>Team Member 2</h3>
+                    <p>Frontend Developer</p>
+                    <p>Created the user interface and experience design.</p>
+                </div>
+                
+                <div class="team-member">
+                    <img src="/static/images/team-member-3.jpg" alt="Team Member 3">
+                    <h3>Team Member 3</h3>
+                    <p>Project Manager</p>
+                    <p>Coordinated development efforts and ensured project milestones.</p>
+                </div>
+                
+                <div class="team-member">
+                    <img src="/static/images/team-member-4.jpg" alt="Team Member 4">
+                    <h3>Team Member 4</h3>
+                    <p>QA Engineer</p>
+                    <p>Tested functionality and ensured a bug-free experience.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <a href="/">Back to Home</a>
+        <a href="/customer/contact/">Contact Us</a>
+    </div>
+</body>
+</html>
+

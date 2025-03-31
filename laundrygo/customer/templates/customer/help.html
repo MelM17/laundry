@@ -1,0 +1,314 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Help & Support - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .help-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .help-card {
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .help-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .help-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .help-subtitle {
+        color: #666;
+    }
+    
+    .query-form {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 5px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    textarea.form-control {
+        min-height: 150px;
+    }
+    
+    .submit-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        text-align: center;
+    }
+    
+    .submit-btn:hover {
+        background-color: #3a4a40;
+    }
+    
+    .previous-queries {
+        margin-top: 30px;
+    }
+    
+    .query-item {
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .query-item.resolved {
+        border-left-color: var(--success-color);
+    }
+    
+    .query-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .query-content {
+        margin-bottom: 15px;
+    }
+    
+    .query-response {
+        background-color: #e9f7ef;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+    
+    .query-status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .status-pending {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .status-resolved {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .faq-section {
+        margin-top: 40px;
+    }
+    
+    .faq-item {
+        margin-bottom: 20px;
+    }
+    
+    .faq-question {
+        font-weight: bold;
+        margin-bottom: 10px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .faq-question:after {
+        content: '+';
+        font-size: 1.2rem;
+    }
+    
+    .faq-question.active:after {
+        content: '-';
+    }
+    
+    .faq-answer {
+        display: none;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+    }
+    
+    .back-btn {
+        display: block;
+        width: 100px;
+        padding: 8px;
+        background-color: #6c757d;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 4px;
+        margin: 20px auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="help-container">
+    <div class="help-card">
+        <div class="help-header">
+            <div class="help-title">HERE, To help you</div>
+            <div class="help-subtitle">Have a question or need assistance? We're here to help!</div>
+        </div>
+        
+        <div class="query-form">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.query.id_for_label }}">Queries</label>
+                    {{ form.query }}
+                    {% if form.query.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.query.errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
+        
+        <!-- Previous Queries Section -->
+        {% if previous_queries %}
+        <div class="previous-queries">
+            <h3>Your Previous Queries</h3>
+            
+            {% for query in previous_queries %}
+            <div class="query-item {% if query.is_resolved %}resolved{% endif %}">
+                <div class="query-header">
+                    <span>Submitted on: {{ query.created_at|date:"F d, Y H:i" }}</span>
+                    <span class="query-status {% if query.is_resolved %}status-resolved{% else %}status-pending{% endif %}">
+                        {% if query.is_resolved %}Resolved{% else %}Pending{% endif %}
+                    </span>
+                </div>
+                <div class="query-content">
+                    <strong>Your Query:</strong>
+                    <p>{{ query.query }}</p>
+                </div>
+                {% if query.is_resolved %}
+                <div class="query-response">
+                    <strong>Response:</strong>
+                    <p>{{ query.response }}</p>
+                    <small>Resolved on: {{ query.resolved_at|date:"F d, Y H:i" }}</small>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <a href="{% url 'customer:dashboard' %}" class="back-btn">Back</a>
+        
+        <div class="faq-section">
+            <h3>Frequently Asked Questions</h3>
+            
+            <div class="faq-item">
+                <div class="faq-question">How do I schedule a laundry service?</div>
+                <div class="faq-answer">
+                    <p>To schedule a laundry service, follow these steps:</p>
+                    <ol>
+                        <li>Search for launderers in your area using the search bar on the home page</li>
+                        <li>Click on a launderer to view their details</li>
+                        <li>Click the "Schedule Now" button</li>
+                        <li>Fill out the scheduling form with your service details</li>
+                        <li>Select the items you want to have laundered</li>
+                        <li>Click "Schedule" to confirm your order</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">How can I track my order?</div>
+                <div class="faq-answer">
+                    <p>You can track your order by going to the "Orders" page from the sidebar menu. Click on "View Details" for any order to see its current status, details, and tracking information. The order status will be updated as it progresses through different stages (pending, confirmed, picked up, processing, ready, delivered).</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">What payment methods are accepted?</div>
+                <div class="faq-answer">
+                    <p>We accept various payment methods including:</p>
+                    <ul>
+                        <li>UPI</li>
+                        <li>Cash</li>
+                        <li>Card</li>
+                        <li>Net Banking</li>
+                    </ul>
+                    <p>You can select your preferred payment method during the scheduling process.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">How do I provide feedback for a service?</div>
+                <div class="faq-answer">
+                    <p>You can provide feedback for a completed order by following these steps:</p>
+                    <ol>
+                        <li>Go to the "Orders" page</li>
+                        <li>Click on "View Details" for the delivered order</li>
+                        <li>Click on the "Leave Feedback" button at the bottom of the order details</li>
+                        <li>Rate the service and provide your comments</li>
+                        <li>Submit your feedback</li>
+                    </ol>
+                    <p>Your feedback helps other customers and helps launderers improve their service.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqQuestions = document.querySelectorAll('.faq-question');
+        
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const answer = this.nextElementSibling;
+                if (answer.style.display === 'block') {
+                    answer.style.display = 'none';
+                } else {
+                    answer.style.display = 'block';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
