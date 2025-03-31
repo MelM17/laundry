@@ -312,7 +312,7 @@
         <ul class="sidebar-menu">
             <li><a href="{% url 'launderer:dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>Home</a></li>
             <li><a href="{% url 'launderer:received_orders' %}" {% if request.resolver_match.url_name == 'received_orders' %}class="active"{% endif %}>Received Orders</a></li>
-            <li><a href="{% url 'launderer:pending_orders' %}"endif%}>Received Orders</a></li>
+            <!-- <li><a href="{% url 'launderer:pending_orders' %}"endif%}>Received Orders</a></li> -->
             <li><a href="{% url 'launderer:pending_orders' %}" {% if request.resolver_match.url_name == 'pending_orders' %}class="active"{% endif %}>Pending Orders</a></li>
             <li><a href="{% url 'launderer:completed_orders' %}" {% if request.resolver_match.url_name == 'completed_orders' %}class="active"{% endif %}>Completed Orders</a></li>
             <li><a href="{% url 'launderer:rejected_orders' %}" {% if request.resolver_match.url_name == 'rejected_orders' %}class="active"{% endif %}>Rejected Orders</a></li>

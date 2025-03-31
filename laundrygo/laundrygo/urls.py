@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin/', include('admin_portal.urls')),  # Admin portal URLs
     path('launderer/', include('launderer.urls')),  # Launderer portal URLs
     path('about/', TemplateView.as_view(template_name='about.html'), name='about'),  # About page
+    
 ]
 
 if settings.DEBUG:

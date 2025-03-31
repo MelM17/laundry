@@ -25,7 +25,7 @@
         font-weight: bold;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         border-radius: 10px;
-        margin-bottom: 20px; 
+        margin-bottom: 20px;
     }
     
     .sub-header {
@@ -56,22 +56,9 @@
         margin-bottom: 5px;
     }
     
-    .form-container .input-group {
-        display: flex;
-        justify-content: space-between;
-    }
-    
-    .form-container .input-group .half-width {
-        width: calc(50% - 10px);
-    }
-    
-    .form-container .input-group .half-width label {
-        text-align: center;
-        display: block;
-    }
-    
     .form-container input, 
-    .form-container textarea {
+    .form-container textarea, 
+    .form-container select {
         width: 100%;
         padding: 10px;
         margin-bottom: 10px;
@@ -83,7 +70,7 @@
     
     .form-container textarea {
         resize: none;
-        height: 80px; 
+        height: 80px;
     }
     
     .form-container .submit-btn {
@@ -96,7 +83,7 @@
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s;
-        margin-top: 10px; 
+        margin-top: 10px;
     }
     
     .form-container .submit-btn:hover {
@@ -122,6 +109,15 @@
         font-size: 0.875rem;
         margin-top: -5px;
         margin-bottom: 10px;
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .checkbox-container label {
+        margin-left: 5px;
     }
 </style>
 {% endblock %}
@@ -150,7 +146,7 @@
         <div class="error-message">{{ form.phone.errors.0 }}</div>
         {% endif %}
         
-        <label for="{{ form.business_name.id_for_label }}">Enter Business Name</label>
+        <label for="{{ form.business_name.id_for_label }}">Business Name</label>
         {{ form.business_name }}
         {% if form.business_name.errors %}
         <div class="error-message">{{ form.business_name.errors.0 }}</div>
@@ -162,24 +158,19 @@
         <div class="error-message">{{ form.address.errors.0 }}</div>
         {% endif %}
         
-        <div class="input-group">
-            <div class="half-width">
-                <label for="{{ form.gstin.id_for_label }}">GSTIN</label>
-                {{ form.gstin }}
-                {% if form.gstin.errors %}
-                <div class="error-message">{{ form.gstin.errors.0 }}</div>
-                {% endif %}
-            </div>
-            <div class="half-width">
-                <label for="{{ form.pincode.id_for_label }}">PIN Code</label>
-                {{ form.pincode }}
-                {% if form.pincode.errors %}
-                <div class="error-message">{{ form.pincode.errors.0 }}</div>
-                {% endif %}
-            </div>
-        </div>
+        <label for="{{ form.pincode.id_for_label }}">PIN Code</label>
+        {{ form.pincode }}
+        {% if form.pincode.errors %}
+        <div class="error-message">{{ form.pincode.errors.0 }}</div>
+        {% endif %}
+
+        <label for="{{ form.gstin.id_for_label }}">GSTIN (Optional)</label>
+        {{ form.gstin }}
+        {% if form.gstin.errors %}
+        <div class="error-message">{{ form.gstin.errors.0 }}</div>
+        {% endif %}
         
-        <label for="{{ form.username.id_for_label }}">Set login-name</label>
+        <label for="{{ form.username.id_for_label }}">Username</label>
         {{ form.username }}
         {% if form.username.errors %}
         <div class="error-message">{{ form.username.errors.0 }}</div>
@@ -191,7 +182,7 @@
         <div class="error-message">{{ form.email.errors.0 }}</div>
         {% endif %}
         
-        <label for="{{ form.password1.id_for_label }}">Set Password</label>
+        <label for="{{ form.password1.id_for_label }}">Password</label>
         {{ form.password1 }}
         {% if form.password1.errors %}
         <div class="error-message">{{ form.password1.errors.0 }}</div>
@@ -203,21 +194,54 @@
         <div class="error-message">{{ form.password2.errors.0 }}</div>
         {% endif %}
         
+        <label for="{{ form.profile_pic.id_for_label }}">Profile Picture</label>
+        {{ form.profile_pic }}
+        {% if form.profile_pic.errors %}
+        <div class="error-message">{{ form.profile_pic.errors.0 }}</div>
+        {% endif %}
+
         <label for="{{ form.upi_id.id_for_label }}">UPI ID (for payments)</label>
         {{ form.upi_id }}
         {% if form.upi_id.errors %}
         <div class="error-message">{{ form.upi_id.errors.0 }}</div>
         {% endif %}
-        
-        <label for="{{ form.profile_pic.id_for_label }}">Set Profile Photo</label>
-        {{ form.profile_pic }}
-        {% if form.profile_pic.errors %}
-        <div class="error-message">{{ form.profile_pic.errors.0 }}</div>
+
+        <!-- Delivery Information Section -->
+        <h3>Delivery Information</h3>
+        <div class="checkbox-container">
+            {{ form.provides_delivery }}
+            <label for="{{ form.provides_delivery.id_for_label }}">Provides Delivery?</label>
+        </div>
+        {% if form.provides_delivery.errors %}
+        <div class="error-message">{{ form.provides_delivery.errors.0 }}</div>
+        {% endif %}
+
+        <label for="{{ form.delivery_radius.id_for_label }}">Delivery Radius (km)</label>
+        {{ form.delivery_radius }}
+        {% if form.delivery_radius.errors %}
+        <div class="error-message">{{ form.delivery_radius.errors.0 }}</div>
+        {% endif %}
+
+        <label for="{{ form.base_delivery_charge.id_for_label }}">Base Delivery Charge</label>
+        {{ form.base_delivery_charge }}
+        {% if form.base_delivery_charge.errors %}
+        <div class="error-message">{{ form.base_delivery_charge.errors.0 }}</div>
+        {% endif %}
+
+        <label for="{{ form.per_km_charge.id_for_label }}">Charge Per KM</label>
+        {{ form.per_km_charge }}
+        {% if form.per_km_charge.errors %}
+        <div class="error-message">{{ form.per_km_charge.errors.0 }}</div>
+        {% endif %}
+
+        <label for="{{ form.min_order_free_delivery.id_for_label }}">Min Order for Free Delivery</label>
+        {{ form.min_order_free_delivery }}
+        {% if form.min_order_free_delivery.errors %}
+        <div class="error-message">{{ form.min_order_free_delivery.errors.0 }}</div>
         {% endif %}
         
         <button type="submit" class="submit-btn">Sign Up</button>
     </form>
-    
     <div class="login-link">
         Already have an account? <a href="{% url 'launderer:login' %}">Login</a>
     </div>

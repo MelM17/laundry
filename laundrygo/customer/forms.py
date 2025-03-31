@@ -43,11 +43,10 @@ class CustomerProfileUpdateForm(forms.ModelForm):
         fields = ['username', 'email', 'phone', 'address', 'pincode', 'profile_pic', 
                 #  'latitude', 'longitude', 'delivery_instructions'
                  ]
-
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['service_type', 'pickup_delivery', 'pickup_date', 'pickup_slot', 
+        fields = ['launderer', 'service_type', 'pickup_delivery', 'pickup_date', 'pickup_slot', 
                   'delivery_date', 'special_instructions', 'payment_method']
         widgets = {
             'pickup_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),

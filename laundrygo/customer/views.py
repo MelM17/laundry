@@ -6,7 +6,7 @@ from django.db.models import Avg, Q
 from django.http import HttpResponse
 from django.utils import timezone
 from django.core.paginator import Paginator
-from .models import User, Launderer, Order, OrderItem, ClothItem, Review, CustomerSupport, ContactMessage
+from .models import User, Launderer, Order, OrderItem, ClothItem, Review, CustomerSupport, ContactMessage,Notification
 from .forms import (CustomerRegistrationForm, CustomerProfileUpdateForm, OrderForm, 
                    ReviewForm, CustomerSupportForm, CustomPasswordResetForm, CustomSetPasswordForm)
 import uuid
@@ -14,7 +14,10 @@ import json
 import math
 from xhtml2pdf import pisa
 from django.template.loader import get_template
+from django.db import transaction
+import logging
 
+logger = logging.getLogger(__name__)
 def home(request):
     if request.user.is_authenticated and request.user.user_type == 'customer':
         return redirect('customer:dashboard')
@@ -199,9 +202,25 @@ def scheduling(request, launderer_id=None):
                 return redirect('customer:scheduling')
     
     launderers = Launderer.objects.filter(is_verified=True)
+    # print("launderers : ", launderers)
+    # print(available_services)
+
+    # launderer = get_object_or_404(Launderer, id=launderer_id)
+    cloth_items = ClothItem.objects.filter(launderer=launderer)
+    # Get available services for this launderer
+    available_services = set()
+    
+    for item in cloth_items:
+        if item.service_type:
+            available_services.add(item.service_type)
+        else:
+            # If no specific service type is set, assume it's available for all services
+            available_services.update([choice[0] for choice in Order.SERVICE_CHOICES])
     return render(request, 'customer/scheduling.html', {
         'form': form,
-        'launderers': launderers
+        'launderers': launderers,
+        'cloth_items': cloth_items,
+        'available_services': available_services,
     })
 
 @login_required
@@ -419,7 +438,7 @@ def contact(request):
     if request.user.is_authenticated:
         previous_messages = ContactMessage.objects.filter(user=request.user).order_by('-created_at')
     
-    return render(request, 'customer/contact.html', {
+    return render(request, 'customer/unregistered-contact.html', {
         'confirmation_message': confirmation_message,
         'previous_messages': previous_messages
     })

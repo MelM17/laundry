@@ -53,7 +53,8 @@ class LaundererRegistrationForm(UserCreationForm):
       fields = ['name', 'phone', 'business_name', 'address', 'gstin', 'pincode', 
                 'username', 'email', 'password1', 'password2', 'profile_pic', 'upi_id',
                 'provides_delivery', 'delivery_radius', 'base_delivery_charge', 
-                'per_km_charge', 'min_order_free_delivery']
+                'per_km_charge', 'min_order_free_delivery'
+                ]
   
   def clean_email(self):
       email = self.cleaned_data.get('email')

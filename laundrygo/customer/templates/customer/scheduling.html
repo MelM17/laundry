@@ -489,7 +489,7 @@
 {% endif %}
 
 <!-- Add a note about order confirmation in the scheduling page -->
-<div class="alert alert-info" style="margin-top: 20px; margin-bottom: 20px;">
+<div class="alert alert-info" style="margin-top: 20px; margin-bottom: 20px; background-color: #ddd;">
     <i class="fas fa-info-circle"></i> 
     <strong>Note:</strong> Your order will be placed in a pending state. The launderer will need to confirm your order before it can be processed. You will receive a notification once your order is confirmed or rejected.
 </div>
@@ -507,7 +507,9 @@
             <div class="services-grid">
                 {% for service_code, service_name in form.fields.service_type.choices %}
                     {% if service_code in available_services %}
-                    <label class="service-card" data-service="{{ service_code }}">
+                    <label class="service-card cust-2" data-service="{{ service_code }}">
+                        <p>Checking: {{ service_code }}</p>
+                        <p>Checking: {{ available_services }}</p>
                         <input type="checkbox" name="service_types" value="{{ service_code }}" class="service-checkbox">
                         <span class="service-icon">
                             {% if service_code == 'washing' %}
@@ -535,6 +537,8 @@
                     </label>
                     {% else %}
                     <div class="service-card service-unavailable">
+                        <p>Checking: {{ service_code }}</p>
+                        <p>Checking: {{ available_services }}</p>
                         <span class="service-icon">
                             {% if service_code == 'washing' %}
                                 <i class="fas fa-tshirt"></i>
