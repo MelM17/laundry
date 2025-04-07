@@ -115,6 +115,43 @@
         background-color: white;
         border-radius: 5px;
     }
+
+    .review-details {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 10px;
+        margin-right: 10px;
+        flex-grow: 1;
+    }
+
+    .review-rating {
+        margin-bottom: 5px;
+    }
+
+    .review-label {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+    .stars {
+        color: #ffc107;
+    }
+
+    .review-comment p {
+        margin: 5px 0 0 0;
+        font-style: italic;
+        color: #555;
+    }
+
+    .feedback-btn {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .feedback-btn:hover {
+        background-color: #e0a800;
+        color: #000;
+    }
 </style>
 {% endblock %}
 
@@ -148,6 +185,30 @@
             </div>
         </div>
         <div class="order-actions">
+            {% if order.status == 'delivered' %}
+                {% if order.review %}
+                    <div class="review-details">
+                        <div class="review-rating">
+                            <span class="review-label">Your Rating:</span>
+                            <span class="stars">
+                                {% for i in "12345" %}
+                                    {% if i|add:"0" <= order.review.rating %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <div class="review-comment">
+                            <span class="review-label">Your Feedback:</span>
+                            <p>"{{ order.review.comment|truncatechars:100 }}"</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'customer:submit_review' order.order_id %}" class="order-btn feedback-btn">Leave Feedback</a>
+                {% endif %}
+            {% endif %}
             <a href="{% url 'customer:order_details' order.order_id %}" class="order-btn view-btn">View Details</a>
         </div>
     </div>
@@ -161,3 +222,4 @@
 </div>
 {% endif %}
 {% endblock %}
+

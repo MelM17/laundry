@@ -7,30 +7,38 @@
     .settings-container {
         max-width: 800px;
         margin: 0 auto;
+        padding: 20px 15px;
     }
     
     .settings-card {
         background-color: white;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 25px;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+    
+    .settings-card:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     }
     
     .settings-header {
-        border-bottom: 1px solid #ddd;
+        border-bottom: 2px solid var(--primary-color);
         padding-bottom: 15px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
     
     .settings-title {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         font-weight: bold;
+        color: var(--primary-color);
     }
     
     .profile-section {
         display: flex;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
+        align-items: center;
     }
     
     .profile-image {
@@ -38,7 +46,14 @@
         height: 150px;
         border-radius: 50%;
         overflow: hidden;
-        margin-right: 20px;
+        margin-right: 30px;
+        border: 3px solid var(--primary-color);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .profile-image:hover {
+        transform: scale(1.03);
     }
     
     .profile-image img {
@@ -52,34 +67,64 @@
     }
     
     .form-group {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
     
     .form-group label {
         display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #444;
     }
     
     .form-control {
         width: 100%;
-        padding: 10px;
+        padding: 12px 15px;
         border: 1px solid #ddd;
-        border-radius: 4px;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(74, 93, 80, 0.2);
+        outline: none;
+    }
+    
+    .readonly {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+        color: #6c757d;
+        border: 1px solid #e2e6ea;
+    }
+    
+    .error {
+        border-color: var(--danger-color);
     }
     
     .save-btn {
         background-color: var(--primary-color);
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
+        padding: 12px 25px;
+        border-radius: 6px;
         cursor: pointer;
         font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 10px;
     }
     
     .save-btn:hover {
         background-color: #3a4a40;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .save-btn:active {
+        transform: translateY(0);
     }
     
     .errorlist {
@@ -87,6 +132,33 @@
         list-style: none;
         padding: 0;
         margin: 5px 0;
+        font-size: 0.9rem;
+    }
+    
+    .validation-message {
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
+    
+    .validation-error {
+        color: var(--danger-color);
+    }
+    
+    .validation-success {
+        color: var(--success-color);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .profile-section {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .profile-image {
+            margin-right: 0;
+            margin-bottom: 20px;
+        }
     }
 </style>
 {% endblock %}
@@ -98,7 +170,7 @@
             <div class="settings-title">Account Settings</div>
         </div>
         
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="settingsForm">
             {% csrf_token %}
             
             <div class="profile-section">
@@ -127,7 +199,8 @@
             
             <div class="form-group">
                 <label for="{{ form.username.id_for_label }}">Username</label>
-                {{ form.username }}
+                <input type="text" id="{{ form.username.id_for_label }}" name="username" value="{{ form.username.value }}" class="form-control readonly" readonly>
+                <div class="validation-message">Username cannot be changed</div>
                 {% if form.username.errors %}
                 <ul class="errorlist">
                     {% for error in form.username.errors %}
@@ -139,7 +212,8 @@
             
             <div class="form-group">
                 <label for="{{ form.email.id_for_label }}">Email</label>
-                {{ form.email }}
+                <input type="email" id="{{ form.email.id_for_label }}" name="email" value="{{ form.email.value }}" class="form-control readonly" readonly>
+                <div class="validation-message">Email cannot be changed</div>
                 {% if form.email.errors %}
                 <ul class="errorlist">
                     {% for error in form.email.errors %}
@@ -151,7 +225,8 @@
             
             <div class="form-group">
                 <label for="{{ form.phone.id_for_label }}">Phone</label>
-                {{ form.phone }}
+                <input type="text" id="{{ form.phone.id_for_label }}" name="phone" value="{{ form.phone.value }}" class="form-control">
+                <div id="phoneValidation" class="validation-message"></div>
                 {% if form.phone.errors %}
                 <ul class="errorlist">
                     {% for error in form.phone.errors %}
@@ -163,7 +238,7 @@
             
             <div class="form-group">
                 <label for="{{ form.address.id_for_label }}">Address</label>
-                {{ form.address }}
+                <textarea id="{{ form.address.id_for_label }}" name="address" class="form-control">{{ form.address.value }}</textarea>
                 {% if form.address.errors %}
                 <ul class="errorlist">
                     {% for error in form.address.errors %}
@@ -175,7 +250,7 @@
             
             <div class="form-group">
                 <label for="{{ form.pincode.id_for_label }}">Pincode</label>
-                {{ form.pincode }}
+                <input type="text" id="{{ form.pincode.id_for_label }}" name="pincode" value="{{ form.pincode.value }}" class="form-control">
                 {% if form.pincode.errors %}
                 <ul class="errorlist">
                     {% for error in form.pincode.errors %}
@@ -190,3 +265,70 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make username and email fields readonly
+        const usernameField = document.getElementById('{{ form.username.id_for_label }}');
+        const emailField = document.getElementById('{{ form.email.id_for_label }}');
+        const phoneField = document.getElementById('{{ form.phone.id_for_label }}');
+        
+        if (usernameField) {
+            usernameField.setAttribute('readonly', 'readonly');
+        }
+        
+        if (emailField) {
+            emailField.setAttribute('readonly', 'readonly');
+        }
+        
+        // Phone number validation
+        if (phoneField) {
+            phoneField.addEventListener('input', validatePhone);
+            phoneField.addEventListener('blur', validatePhone);
+            // Initial validation
+            validatePhone();
+        }
+        
+        // Form submission validation
+        const settingsForm = document.getElementById('settingsForm');
+        if (settingsForm) {
+            settingsForm.addEventListener('submit', function(e) {
+                if (!validatePhone()) {
+                    e.preventDefault();
+                    alert('Please enter a valid 10-digit phone number');
+                }
+            });
+        }
+    });
+    
+    // Phone validation function
+    function validatePhone() {
+        const phoneField = document.getElementById('{{ form.phone.id_for_label }}');
+        const validationMsg = document.getElementById('phoneValidation');
+        
+        if (!phoneField || !validationMsg) return false;
+        
+        const phoneValue = phoneField.value.trim();
+        const phoneRegex = /^\d{10}$/;
+        
+        if (phoneValue === '') {
+            validationMsg.textContent = 'Phone number is required';
+            validationMsg.className = 'validation-message validation-error';
+            phoneField.classList.add('error');
+            return false;
+        } else if (!phoneRegex.test(phoneValue)) {
+            validationMsg.textContent = 'Phone number must be exactly 10 digits';
+            validationMsg.className = 'validation-message validation-error';
+            phoneField.classList.add('error');
+            return false;
+        } else {
+            validationMsg.textContent = 'Valid phone number';
+            validationMsg.className = 'validation-message validation-success';
+            phoneField.classList.remove('error');
+            return true;
+        }
+    }
+</script>
+{% endblock %}
+
