@@ -72,6 +72,29 @@
     .service-types-info li {
         margin-bottom: 5px;
     }
+    
+    /* Styles for readonly fields */
+    .readonly-field {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+        border-color: #ced4da;
+        color: #6c757d;
+    }
+    
+    .readonly-notice {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 4px;
+        font-style: italic;
+    }
+    
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
+    }
 </style>
 {% endblock %}
 
@@ -89,8 +112,20 @@
                 {% endif %}
             </div>
             
-            <form method="post" enctype="multipart/form-data" style="flex: 1;">
+            <form method="post" enctype="multipart/form-data" style="flex: 1;" id="laundererSettingsForm">
                 {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" value="{{ user.username }}" class="readonly-field" readonly>
+                    <div class="readonly-notice">Username cannot be changed</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" class="readonly-field" readonly>
+                    <div class="readonly-notice">Email cannot be changed</div>
+                </div>
                 
                 <div class="form-group">
                     <label for="{{ form.business_name.id_for_label }}">Business Name:</label>
@@ -115,6 +150,9 @@
                 <div class="form-group">
                     <label for="{{ form.phone.id_for_label }}">Phone:</label>
                     {{ form.phone }}
+                    <div id="phoneError" class="invalid-feedback" style="display: none;">
+                        Phone number must be exactly 10 digits.
+                    </div>
                     {% if form.phone.errors %}
                     <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
                         {{ form.phone.errors }}
@@ -125,6 +163,7 @@
                 <div class="form-group">
                     <label for="{{ form.address.id_for_label }}">Address:</label>
                     {{ form.address }}
+                    <div class="readonly-notice">Address cannot be changed</div>
                     {% if form.address.errors %}
                     <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
                         {{ form.address.errors }}
@@ -135,6 +174,7 @@
                 <div class="form-group">
                     <label for="{{ form.pincode.id_for_label }}">PIN Code:</label>
                     {{ form.pincode }}
+                    <div class="readonly-notice">PIN Code cannot be changed</div>
                     {% if form.pincode.errors %}
                     <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
                         {{ form.pincode.errors }}
@@ -145,6 +185,7 @@
                 <div class="form-group">
                     <label for="{{ form.gstin.id_for_label }}">GSTIN:</label>
                     {{ form.gstin }}
+                    <div class="readonly-notice">GSTIN cannot be changed</div>
                     {% if form.gstin.errors %}
                     <div class="error-message" style="color: #dc3545; font-size: 0.875rem; margin-top: 5px;">
                         {{ form.gstin.errors }}
@@ -447,6 +488,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         const providesDeliveryCheckbox = document.getElementById('provides_delivery');
         const deliveryOptions = document.getElementById('deliveryOptions');
+        const phoneInput = document.getElementById('{{ form.phone.id_for_label }}');
+        const gstinInput = document.getElementById('{{ form.gstin.id_for_label }}');
+        const addressInput = document.getElementById('{{ form.address.id_for_label }}');
+        const pincodeInput = document.getElementById('{{ form.pincode.id_for_label }}');
+        const phoneError = document.getElementById('phoneError');
+        const form = document.getElementById('laundererSettingsForm');
         
         // Function to toggle delivery options visibility
         function toggleDeliveryOptions() {
@@ -455,6 +502,52 @@
             } else {
                 deliveryOptions.classList.add('disabled');
             }
+        }
+        
+        // Make fields readonly
+        if (gstinInput) {
+            gstinInput.readOnly = true;
+            gstinInput.classList.add('readonly-field');
+        }
+        
+        if (addressInput) {
+            addressInput.readOnly = true;
+            addressInput.classList.add('readonly-field');
+        }
+        
+        if (pincodeInput) {
+            pincodeInput.readOnly = true;
+            pincodeInput.classList.add('readonly-field');
+        }
+        
+        // Phone number validation
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                // Remove any non-digit characters
+                this.value = this.value.replace(/\D/g, '');
+                
+                // Check if phone number is exactly 10 digits
+                if (this.value.length !== 10 && this.value.length > 0) {
+                    phoneError.style.display = 'block';
+                    this.classList.add('is-invalid');
+                } else {
+                    phoneError.style.display = 'none';
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+        
+        // Form submission validation
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (phoneInput && phoneInput.value.length > 0 && phoneInput.value.length !== 10) {
+                    e.preventDefault();
+                    phoneError.style.display = 'block';
+                    phoneInput.classList.add('is-invalid');
+                    phoneInput.focus();
+                    return false;
+                }
+            });
         }
         
         // Initial toggle

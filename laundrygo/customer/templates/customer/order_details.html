@@ -1,108 +1,439 @@
 {% extends 'customer/base.html' %}
-{% load static %}
+
+{% block title %}Order Details - LaundryGo{% endblock %}
+
+{% block extra_css %}
+<style>
+  .order-details-container {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 5px;
+      color: white;
+  }
+  
+  .order-details-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+  }
+  
+  .order-details-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+  }
+  
+  .order-details-content {
+      background-color: white;
+      border-radius: 5px;
+      padding: 20px;
+      color: var(--text-color);
+  }
+  
+  .order-status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-left: 10px;
+  }
+  
+  .status-pending_acceptance, .status-pending {
+      background-color: #ffc107;
+      color: #000;
+  }
+  
+  .status-confirmed {
+      background-color: #17a2b8;
+      color: #fff;
+  }
+  
+  .status-picked_up {
+      background-color: #6c757d;
+      color: #fff;
+  }
+  
+  .status-processing {
+      background-color: #007bff;
+      color: #fff;
+  }
+  
+  .status-ready {
+      background-color: #28a745;
+      color: #fff;
+  }
+  
+  .status-delivered {
+      background-color: #28a745;
+      color: #fff;
+  }
+  
+  .status-cancelled {
+      background-color: #dc3545;
+      color: #fff;
+  }
+  
+  .status-rejected {
+      background-color: #dc3545;
+      color: #fff;
+  }
+  
+  .order-info-section {
+      margin-bottom: 20px;
+  }
+  
+  .order-info-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+  }
+  
+  .order-info-row {
+      display: flex;
+      margin-bottom: 10px;
+  }
+  
+  .order-info-label {
+      width: 150px;
+      font-weight: bold;
+  }
+  
+  .order-info-value {
+      flex: 1;
+  }
+  
+  .order-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+  }
+  
+  .order-items-table th,
+  .order-items-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+  }
+  
+  .order-items-table th {
+      background-color: #000000;
+  }
+  
+  .order-items-table tfoot td {
+      font-weight: bold;
+  }
+  
+  .order-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+  }
+  
+  .order-btn {
+      padding: 8px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+  }
+  
+  .cancel-btn {
+      background-color: #dc3545;
+      color: white;
+  }
+  
+  .download-btn {
+      background-color: var(--primary-color);
+      color: white;
+  }
+  
+  .review-btn {
+      background-color: #ffc107;
+      color: #000;
+  }
+  
+  .status-timeline {
+      margin: 30px 0;
+      position: relative;
+  }
+  
+  .timeline-line {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: #ddd;
+      z-index: 1;
+  }
+  
+  .timeline-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+  }
+  
+  .timeline-step {
+      text-align: center;
+      width: 100px;
+  }
+  
+  .step-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+  }
+  
+  .step-icon.active {
+      background-color: var(--primary-color);
+      color: white;
+  }
+  
+  .step-label {
+      font-size: 0.8rem;
+  }
+  
+  .rejection-reason {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 4px;
+      color: #721c24;
+  }
+
+  .btn-info {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">Order #{{ order.id }} Details</h3>
-                    <span class="badge 
-                        {% if order.status == 'Pending Acceptance' %}bg-warning
-                        {% elif order.status == 'Accepted' %}bg-info
-                        {% elif order.status == 'In Progress' %}bg-primary
-                        {% elif order.status == 'Completed' %}bg-success
-                        {% elif order.status == 'Rejected' %}bg-danger
-                        {% elif order.status == 'Cancelled' %}bg-secondary
-                        {% endif %}">
-                        {{ order.status }}
-                    </span>
-                </div>
-                <div class="card-body">
-                    {% if order.status == 'pending_acceptance' %}
-                    <div class="alert alert-warning">
-                        <strong>Order Status: Pending Acceptance</strong>
-                        <p>Your order is waiting for the launderer to accept it. You'll be notified once it's accepted.</p>
-                    </div>
-                    {% elif order.status == 'confirmed' %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Your order has been confirmed by the launderer. It will be picked up as scheduled.
-                    </div>
-                    {% endif %}
+<div class="order-details-container">
+  <div class="order-details-header">
+      <div class="order-details-title">
+          Order #{{ order.order_id|truncatechars:8 }}
+          <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+      </div>
+      <div>
+          <a href="{% url 'customer:download_order_pdf' order.order_id %}" class="order-btn download-btn">
+              <i class="fas fa-download"></i> Download PDF
+          </a>
+      </div>
+  </div>
+  
+  <div class="order-details-content">
+      {% if order.status == 'pending_acceptance' %}
+      <div class="alert alert-warning">
+          <strong>Order Status: Pending Acceptance</strong>
+          <p>Your order is waiting for the launderer to accept it. You'll be notified once it's accepted.</p>
+      </div>
+      {% elif order.status == 'pending' %}
+      <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i> Your order is awaiting confirmation from the launderer. You will be notified once it's confirmed.
+      </div>
+      {% endif %}
+      
+      {% if order.status == 'rejected' %}
+      <div class="rejection-reason">
+          <strong>Rejection Reason:</strong> {{ order.rejection_reason }}
+      </div>
+      {% endif %}
+      
+      {% if order.status != 'rejected' and order.status != 'cancelled' %}
+      <div class="status-timeline">
+          <div class="timeline-line"></div>
+          <div class="timeline-steps">
+              <div class="timeline-step">
+                  <div class="step-icon {% if order.status != 'rejected' %}active{% endif %}">
+                      <i class="fas fa-check"></i>
+                  </div>
+                  <div class="step-label">Placed</div>
+              </div>
+              <div class="timeline-step">
+                  <div class="step-icon {% if order.status == 'confirmed' or order.status == 'picked_up' or order.status == 'processing' or order.status == 'ready' or order.status == 'delivered' %}active{% endif %}">
+                      <i class="fas fa-thumbs-up"></i>
+                  </div>
+                  <div class="step-label">Confirmed</div>
+              </div>
+              <div class="timeline-step">
+                  <div class="step-icon {% if order.status == 'picked_up' or order.status == 'processing' or order.status == 'ready' or order.status == 'delivered' %}active{% endif %}">
+                      <i class="fas fa-truck"></i>
+                  </div>
+                  <div class="step-label">Picked Up</div>
+              </div>
+              <div class="timeline-step">
+                  <div class="step-icon {% if order.status == 'processing' or order.status == 'ready' or order.status == 'delivered' %}active{% endif %}">
+                      <i class="fas fa-cog"></i>
+                  </div>
+                  <div class="step-label">Processing</div>
+              </div>
+              <div class="timeline-step">
+                  <div class="step-icon {% if order.status == 'ready' or order.status == 'delivered' %}active{% endif %}">
+                      <i class="fas fa-check-circle"></i>
+                  </div>
+                  <div class="step-label">Ready</div>
+              </div>
+              <div class="timeline-step">
+                  <div class="step-icon {% if order.status == 'delivered' %}active{% endif %}">
+                      <i class="fas fa-home"></i>
+                  </div>
+                  <div class="step-label">Delivered</div>
+              </div>
+          </div>
+      </div>
+      {% endif %}
+      
+      <div class="order-info-section">
+          <div class="order-info-title">Launderer Information</div>
+          <div class="order-info-row">
+              <div class="order-info-label">Name:</div>
+              <div class="order-info-value">{{ order.launderer.business_name }}</div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Address:</div>
+              <div class="order-info-value">{{ order.launderer.user.address }}</div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Phone:</div>
+              <div class="order-info-value">{{ order.launderer.user.phone }}</div>
+          </div>
+      </div>
+      
+      <div class="order-info-section">
+          <div class="order-info-title">Order Information</div>
+          <div class="order-info-row">
+              <div class="order-info-label">Order Date:</div>
+              <div class="order-info-value">{{ order.created_at|date:"F d, Y H:i" }}</div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Service Type:</div>
+              <div class="order-info-value">{{ order.get_service_type_display }}</div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Pickup/Delivery:</div>
+              <div class="order-info-value">{{ order.get_pickup_delivery_display }}</div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Pickup Date:</div>
+              <div class="order-info-value">{{ order.pickup_date|date:"F d, Y" }}</div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Pickup Slot:</div>
+              <div class="order-info-value">{{ order.get_pickup_slot_display }}</div>
+          </div>
+          {% if order.delivery_date %}
+          <div class="order-info-row">
+              <div class="order-info-label">Delivery Date:</div>
+              <div class="order-info-value">{{ order.delivery_date|date:"F d, Y" }}</div>
+          </div>
+          {% endif %}
+          <div class="order-info-row">
+              <div class="order-info-label">Payment Method:</div>
+              <div class="order-info-value">{{ order.get_payment_method_display }}</div>
+          </div>
+          {% if order.special_instructions %}
+          <div class="order-info-row">
+              <div class="order-info-label">Special Instructions:</div>
+              <div class="order-info-value">{{ order.special_instructions }}</div>
+          </div>
+          {% endif %}
+      </div>
+      
+      <div class="order-info-section">
+          <div class="order-info-title">Order Items</div>
+          <table class="order-items-table">
+              <thead>
+                  <tr>
+                      <th>Item</th>
+                      <th>Type</th>
+                      <th>Quantity</th>
+                      <th>Price</th>
+                      <th>Subtotal</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for item in items %}
+                  <tr>
+                      <td>{{ item.cloth_item.cloth_name }}</td>
+                      <td>{{ item.cloth_item.cloth_type.name }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td>₹{{ item.cloth_item.price }}</td>
+                      <td>₹{{ item.subtotal }}</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+              <tfoot>
+                  <tr>
+                      <td colspan="4" style="text-align: right;">Delivery Charge:</td>
+                      <td>₹{{ order.delivery_charge }}</td>
+                  </tr>
+                  <tr>
+                      <td colspan="4" style="text-align: right;">Total Amount:</td>
+                      <td>₹{{ order.total_amount }}</td>
+                  </tr>
+              </tfoot>
+          </table>
+      </div>
+      
+      <div class="order-actions">
+          {% if order.status == 'pending_acceptance' %}
+          <form method="post" action="{% url 'customer:cancel_order' order.order_id %}" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+              {% csrf_token %}
+              <button type="submit" class="order-btn cancel-btn">Cancel Order</button>
+          </form>
+          {% endif %}
+          
+          {% if order.status == 'delivered' and not order.review %}
+          <a href="{% url 'customer:submit_review' order.order_id %}" class="order-btn review-btn">Submit Review</a>
+          {% endif %}
 
-                    {% if order.status == 'rejected' %}
-                    <div class="rejection-reason">
-                        <strong>Rejection Reason:</strong> {{ order.rejection_reason }}
-                    </div>
-                    {% endif %}
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h5>Launderer Information</h5>
-                            {% if order.launderer %}
-                            <p><strong>Business:</strong> {{ order.launderer.business_name }}</p>
-                            <p><strong>Address:</strong> {{ order.launderer.address }}</p>
-                            <p><strong>Phone:</strong> {{ order.launderer.phone_number }}</p>
-                            {% else %}
-                            <p>No launderer assigned yet.</p>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Order Information</h5>
-                            <p><strong>Created:</strong> {{ order.created_at|date:"M d, Y g:i A" }}</p>
-                            <p><strong>Pickup:</strong> {{ order.pickup_date|date:"M d, Y" }} at {{ order.pickup_time|time:"g:i A" }}</p>
-                            <p><strong>Delivery:</strong> {{ order.delivery_date|date:"M d, Y" }} at {{ order.delivery_time|time:"g:i A" }}</p>
-                        </div>
-                    </div>
-                    
-                    <h5>Delivery Address</h5>
-                    <p>{{ order.address }}</p>
-                    
-                    {% if order.special_instructions %}
-                    <h5>Special Instructions</h5>
-                    <p>{{ order.special_instructions }}</p>
-                    {% endif %}
-                    
-                    <h5>Order Items</h5>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Quantity</th>
-                                    <th>Price</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in order.orderitem_set.all %}
-                                <tr>
-                                    <td>{{ item.item_type }}</td>
-                                    <td>{{ item.quantity }}</td>
-                                    <td>${{ item.price_per_item|default:"0.00" }}</td>
-                                    <td>${{ item.subtotal|default:"0.00" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th colspan="3" class="text-end">Total:</th>
-                                    <th>${{ order.total_price }}</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-4">
-                        {% if order.status == 'Pending Acceptance' %}
-                        <a href="{% url 'customer:cancel_order' order.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</a>
-                        {% endif %}
-                        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      </div>
+      
+      {% if order.review %}
+      <div class="order-info-section">
+          <div class="order-info-title">Your Review</div>
+          <div class="order-info-row">
+              <div class="order-info-label">Rating:</div>
+              <div class="order-info-value">
+                  {% for i in "12345" %}
+                      {% if forloop.counter <= order.review.rating %}
+                          <i class="fas fa-star" style="color: gold;"></i>
+                      {% else %}
+                          <i class="far fa-star" style="color: #ccc;"></i>
+                      {% endif %}
+                  {% endfor %}
+                  ({{ order.review.rating }}/5)
+              </div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Comment:</div>
+              <div class="order-info-value">{{ order.review.comment }}</div>
+          </div>
+          <div class="order-info-row">
+              <div class="order-info-label">Submitted:</div>
+              <div class="order-info-value">{{ order.review.created_at|date:"F d, Y H:i" }}</div>
+          </div>
+      </div>
+      {% endif %}
+  </div>
 </div>
 {% endblock %}
 

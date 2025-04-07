@@ -161,3 +161,10 @@ LOGGING = {
     },
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Or your provider
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'melissanadar206@gmail.com'
+EMAIL_HOST_PASSWORD = 'wuky hxze vvjt puoh'  # NOT your Gmail password
+DEFAULT_FROM_EMAIL = 'LaundryGo <melissanadar206@example.com>'

@@ -11,6 +11,8 @@ import csv
 import io
 import xlsxwriter
 from datetime import datetime, timedelta
+from django.conf import settings
+
 
 from customer.models import User, Launderer, CustomerSupport, Order, Review
 from .models import LaundererVerification, AdminSupportResponse, AnalyticsData
@@ -436,7 +438,7 @@ def respond_to_contact(request, message_id):
                 send_mail(
                     f'Re: {contact_message.subject}',
                     response,
-                    'admin@laundrygo.com',
+                    settings.DEFAULT_FROM_EMAIL, # safer and consistent
                     [contact_message.email],
                     fail_silently=False,
                 )

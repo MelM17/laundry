@@ -302,7 +302,7 @@
             <li><a href="{% url 'admin_portal:manage_customers' %}" {% if request.resolver_match.url_name == 'manage_customers' %}class="active"{% endif %}>Manage Customers</a></li>
             <li><a href="{% url 'admin_portal:manage_laundromats' %}" {% if request.resolver_match.url_name == 'manage_laundromats' %}class="active"{% endif %}>Manage Laundromats</a></li>
             <li><a href="{% url 'admin_portal:manage_contact_messages' %}" {% if request.resolver_match.url_name == 'manage_contact_messages' %}class="active"{% endif %}>Contact Messages</a></li>
-            <li><a href="{% url 'admin_portal:analytics' %}" {% if request.resolver_match.url_name == 'analytics' %}class="active"{% endif %}>Analytics</a></li>
+            <!-- <li><a href="{% url 'admin_portal:analytics' %}" {% if request.resolver_match.url_name == 'analytics' %}class="active"{% endif %}>Analytics</a></li> -->
             <li><a href="{% url 'admin_portal:logout' %}">Log Out</a></li>
         </ul>
     </div>
