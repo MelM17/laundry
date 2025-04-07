@@ -6,7 +6,7 @@ from django.db.models import Avg, Q
 from django.http import HttpResponse
 from django.utils import timezone
 from django.core.paginator import Paginator
-from .models import User, Launderer, Order, OrderItem, ClothItem, Review, CustomerSupport, ContactMessage,Notification
+from .models import User, Launderer, Order, OrderItem, ClothItem, Review, CustomerSupport, ContactMessage
 from .forms import (CustomerRegistrationForm, CustomerProfileUpdateForm, OrderForm, 
                    ReviewForm, CustomerSupportForm, CustomPasswordResetForm, CustomSetPasswordForm)
 import uuid
@@ -17,7 +17,9 @@ from django.template.loader import get_template
 from django.db import transaction
 import logging
 
+# Set up logger
 logger = logging.getLogger(__name__)
+
 def home(request):
     if request.user.is_authenticated and request.user.user_type == 'customer':
         return redirect('customer:dashboard')
@@ -109,7 +111,6 @@ def launderer_detail(request, launderer_id):
     
     # Get available services for this launderer
     available_services = set()
-    
     for item in cloth_items:
         if item.service_type:
             available_services.add(item.service_type)
@@ -128,138 +129,334 @@ def launderer_detail(request, launderer_id):
         'available_services': available_services,
         'working_hours': working_hours
     })
-
-# Update the scheduling view to filter cloth items by service type
-
 @login_required
-def scheduling(request, launderer_id=None):
+def scheduling(request, launderer_id):
+    logger.info(f"Scheduling view called for launderer_id: {launderer_id}")
+    
+    launderer = get_object_or_404(Launderer, id=launderer_id)
+    logger.info(f"Launderer found: {launderer.business_name}")
+    
+    # Get all cloth items for this launderer
+    all_cloth_items = ClothItem.objects.filter(launderer=launderer)
+    
+    # Prepare cloth items JSON for JavaScript
+    cloth_items_json = []
+    for item in all_cloth_items:
+        cloth_items_json.append({
+            'id': item.id,
+            'cloth_name': item.cloth_name,
+            'cloth_type_name': item.cloth_type.name,
+            'price': float(item.price),
+            'service_type': item.service_type
+        })
+    
+    import json
+    cloth_items_json = json.dumps(cloth_items_json)
+    
+    # Get available services for this launderer
+    from launderer.models import LaundererService
+    launderer_services = LaundererService.objects.filter(launderer=launderer, is_active=True)
+    
+    # If the launderer has specific services defined, use those
+    available_services = set()
+    if launderer_services.exists():
+        for service in launderer_services:
+            if hasattr(service, 'service_type') and service.service_type:
+                available_services.add(service.service_type)
+            else:
+                # Map service names to service codes
+                if "wash" in service.service_name.lower():
+                    available_services.add('washing')
+                elif "dry" in service.service_name.lower() or "clean" in service.service_name.lower():
+                    available_services.add('dry_cleaning')
+                elif "iron" in service.service_name.lower() or "press" in service.service_name.lower():
+                    available_services.add('ironing')
+                elif "full" in service.service_name.lower() or "complete" in service.service_name.lower():
+                    available_services.add('full_service')
+    else:
+        # Otherwise, infer from cloth items
+        for item in all_cloth_items:
+            if item.service_type:
+                available_services.add(item.service_type)
+            else:
+                # If no specific service type is set, assume it's available for all services
+                available_services.update([choice[0] for choice in Order.SERVICE_CHOICES])
+    
+    # Convert set to list for JSON serialization
+    available_services_list = list(available_services)
+    logger.info(f"Available services for {launderer.business_name}: {available_services_list}")
+    
+    # Get saved addresses for this user
+    from .models import CustomerAddress
+    saved_addresses = CustomerAddress.objects.filter(user=request.user)
+    
+    # Calculate distance and delivery charges
+    customer = request.user
+    delivery_charge = 0
+    distance = 0
+    
+    # Calculate distance if both customer and launderer have coordinates
+    if (customer.latitude and customer.longitude and 
+        launderer.user.latitude and launderer.user.longitude):
+        # Calculate distance using Haversine formula
+        lat1, lon1 = customer.latitude, customer.longitude
+        lat2, lon2 = launderer.user.latitude, launderer.user.longitude
+        
+        # Convert latitude and longitude from degrees to radians
+        lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+        
+        # Haversine formula
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        r = 6371  # Radius of earth in kilometers
+        distance = round(c * r, 2)
+        
+        # Check if distance is within delivery radius
+        if distance > launderer.delivery_radius:
+            messages.warning(request, f"You are {distance} km away from this launderer, which is outside their delivery radius of {launderer.delivery_radius} km.")
+    
     if request.method == 'POST':
-        form = OrderForm(request.POST)
+        logger.info("POST request received for scheduling")
+        
+        # Log all POST data for debugging
+        for key, value in request.POST.items():
+            logger.info(f"POST data: {key} = {value}")
+        
+        # Get selected services from POST data
+        try:
+            selected_services = json.loads(request.POST.get('selected_services', '[]'))
+            logger.info(f"Selected services: {selected_services}")
+        except json.JSONDecodeError:
+            logger.error("Failed to parse selected_services JSON")
+            selected_services = []
+        
+        if not selected_services:
+            messages.error(request, 'Please select at least one service')
+            form = OrderForm()
+            return render(request, 'customer/scheduling.html', {
+                'form': form,
+                'launderer': launderer,
+                'available_services': json.dumps(available_services_list),
+                'distance': distance,
+                'delivery_charge': delivery_charge,
+                'cloth_items_json': cloth_items_json,
+                'saved_addresses': saved_addresses
+            })
+        
+        # Get items data
+        try:
+            items_data = json.loads(request.POST.get('items_data', '[]'))
+            logger.info(f"Items data: {items_data}")
+        except json.JSONDecodeError:
+            logger.error("Failed to parse items_data JSON")
+            items_data = []
+        
+        if not items_data:
+            messages.error(request, 'Please select at least one item')
+            form = OrderForm()
+            return render(request, 'customer/scheduling.html', {
+                'form': form,
+                'launderer': launderer,
+                'available_services': json.dumps(available_services_list),
+                'distance': distance,
+                'delivery_charge': delivery_charge,
+                'cloth_items_json': cloth_items_json,
+                'saved_addresses': saved_addresses
+            })
+        
+        # Create a modified POST data dictionary that includes the required fields
+        post_data = request.POST.copy()
+        
+        # Add the launderer ID to the POST data
+        post_data['launderer'] = launderer.id
+        
+        # Add the first selected service as the service_type
+        post_data['service_type'] = selected_services[0]
+        
+        # Now create the form with the modified POST data
+        form = OrderForm(post_data, request.FILES)
+        
         if form.is_valid():
+            logger.info("Form is valid")
             try:
+                # Use transaction to ensure all related objects are created together
                 with transaction.atomic():
-                    # Create the order with initial status "Pending Acceptance"
+                    # Create order object but don't save yet
                     order = form.save(commit=False)
-                    order.customer = request.user.customer
-                    
-                    if launderer_id:
-                        try:
-                            launderer = Launderer.objects.get(id=launderer_id)
-                            order.launderer = launderer
-                        except Launderer.DoesNotExist:
-                            messages.error(request, "Selected launderer does not exist.")
-                            return redirect('customer:scheduling')
-                    
+                    order.customer = request.user
+                    order.launderer = launderer
                     order.status = 'pending_acceptance'  # Set initial status to pending_acceptance
-                    order.save()
-                    logger.info(f"Order created successfully: {order.id}")
+                    logger.info(f"Setting order status to: {order.status}")
                     
-                    # Create notification for the launderer
-                    if order.launderer:
-                        Notification.objects.create(
-                            user=order.launderer.user,
-                            message=f"New order received from {order.customer.user.username}",
-                            order_id=order.id,
-                            notification_type="new_order"
-                        )
+                    # Calculate total amount
+                    total_amount = 0
                     
-                    # Create items from the form data
-                    items_data = []
-                    for i in range(1, 11):  # Assuming maximum 10 items
-                        item_type = request.POST.get(f'item_type_{i}')
-                        quantity = request.POST.get(f'quantity_{i}')
-                        
-                        if item_type and quantity and int(quantity) > 0:
-                            items_data.append({
-                                'item_type': item_type,
-                                'quantity': int(quantity)
-                            })
-                    
-                    # Save each item
+                    # Calculate item subtotals
                     for item_data in items_data:
-                        OrderItem.objects.create(
-                            order=order,
-                            item_type=item_data['item_type'],
-                            quantity=item_data['quantity']
-                        )
+                        cloth_item_id = item_data.get('id')
+                        if not cloth_item_id:
+                            logger.error(f"Missing cloth item ID in item data: {item_data}")
+                            continue
+                            
+                        try:
+                            cloth_item = ClothItem.objects.get(id=cloth_item_id)
+                            quantity = int(item_data.get('quantity', 1))
+                            subtotal = cloth_item.price * quantity
+                            total_amount += subtotal
+                        except ClothItem.DoesNotExist:
+                            logger.error(f"Cloth item with ID {cloth_item_id} not found")
+                            continue
+                        except ValueError as e:
+                            logger.error(f"Error calculating subtotal: {str(e)}")
+                            continue
                     
-                    messages.success(request, "Your order has been placed successfully! It will be confirmed once the launderer accepts it.")
-                    return redirect('customer:order_details', order_id=order.id)
+                    # Calculate delivery charge if pickup or both is selected
+                    pickup_delivery = form.cleaned_data['pickup_delivery']
+                    if pickup_delivery in ['pickup', 'both'] and distance > 0:
+                        # Free delivery if order amount exceeds minimum
+                        if total_amount >= launderer.min_order_free_delivery:
+                            delivery_charge = 0
+                        else:
+                            # Base charge plus per km charge
+                            delivery_charge = launderer.base_delivery_charge + (distance * launderer.per_km_charge)
+
+                    # Add delivery charge to total
+                    order.delivery_charge = delivery_charge
+                    order.distance = distance
+                    order.total_amount = total_amount + delivery_charge
+
+                    # Handle image upload
+                    if 'laundry_image' in request.FILES:
+                        order.laundry_image = request.FILES['laundry_image']
+
+                    # Get selected address
+                    selected_address_id = request.POST.get('selected_address_id')
+                    if selected_address_id and selected_address_id != str(request.user.id):
+                        try:
+                            address = CustomerAddress.objects.get(id=selected_address_id, user=request.user)
+                            order.delivery_address = address.address
+                            order.delivery_pincode = address.pincode
+                            order.delivery_instructions = address.instructions
+                        except CustomerAddress.DoesNotExist:
+                            # Use customer's default address if selected address doesn't exist
+                            order.delivery_address = request.user.address
+                            order.delivery_pincode = request.user.pincode
+                            order.delivery_instructions = request.user.delivery_instructions
+                    else:
+                        # Use customer's default address
+                        order.delivery_address = request.user.address
+                        order.delivery_pincode = request.user.pincode
+                        order.delivery_instructions = request.user.delivery_instructions
+
+                    # Log order details before saving
+                    logger.info(f"Order details before save: {order.__dict__}")
+                    
+                    # Save the order to the database
+                    order.save()
+                    logger.info(f"Order saved successfully with ID: {order.order_id}")
+                    
+                    # Verify the order was saved correctly
+                    saved_order = Order.objects.filter(order_id=order.order_id).first()
+                    if saved_order:
+                        logger.info(f"Order verification: Found order with ID {saved_order.order_id}, status: {saved_order.status}")
+                    else:
+                        logger.error(f"Order verification failed: Could not find order with ID {order.order_id}")
+                    
+                    # Save order items
+                    for item_data in items_data:
+                        cloth_item_id = item_data.get('id')
+                        if not cloth_item_id:
+                            continue
+                            
+                        try:
+                            cloth_item = ClothItem.objects.get(id=cloth_item_id)
+                            quantity = int(item_data.get('quantity', 1))
+                            subtotal = cloth_item.price * quantity
+                            
+                            order_item = OrderItem.objects.create(
+                                order=order,
+                                cloth_item=cloth_item,
+                                quantity=quantity,
+                                subtotal=subtotal
+                            )
+                            logger.info(f"Order item created: {order_item.id}")
+                        except Exception as e:
+                            logger.error(f"Error creating order item: {str(e)}")
+                            continue
+                    
+                    # Create notification for launderer about new order
+                    try:
+                        from launderer.models import Notification as LaundererNotification
+                        notification = LaundererNotification.objects.create(
+                            user=launderer.user,
+                            notification_type='new_order',
+                            title="New Order Received",
+                            message=f"You have received a new order from {request.user.username}.",
+                            order=order
+                        )
+                        logger.info(f"Launderer notification created: {notification.id}")
+                    except Exception as e:
+                        logger.error(f"Error creating launderer notification: {str(e)}")
+                    
+                    # Create a status update for the order
+                    try:
+                        from launderer.models import LaundererOrderStatus
+                        status_update = LaundererOrderStatus.objects.create(
+                            order=order,
+                            status='pending_acceptance',
+                            notes="Order placed by customer",
+                            updated_by=None  # Make updated_by nullable
+                        )
+                        logger.info(f"Status update created: {status_update.id}")
+                    except Exception as e:
+                        logger.error(f"Error creating status update: {str(e)}")
+                    
+                    # Create notification for customer about order placement
+                    try:
+                        from customer.models import Notification as CustomerNotification
+                        customer_notification = CustomerNotification.objects.create(
+                            user=request.user,
+                            notification_type='order_status',
+                            title="Order Placed Successfully",
+                            message=f"Your order #{order.order_id} has been placed successfully. It will be confirmed once the launderer accepts it.",
+                            order=order
+                        )
+                        logger.info(f"Customer notification created: {customer_notification.id}")
+                    except Exception as e:
+                        logger.error(f"Error creating customer notification: {str(e)}")
+                
+                # Check if the order was successfully saved
+                try:
+                    order_check = Order.objects.get(order_id=order.order_id)
+                    logger.info(f"Order successfully saved and retrieved: {order_check.order_id}, status: {order_check.status}")
+                    messages.success(request, 'Order placed successfully! Your order will be confirmed once the launderer accepts it.')
+                    return redirect('customer:order_details', order_id=order.order_id)
+                except Order.DoesNotExist:
+                    logger.error(f"Order was not saved to the database: {order.order_id}")
+                    messages.error(request, 'Error: Order was not saved to the database. Please try again.')
+                    
             except Exception as e:
-                logger.error(f"Error creating order: {str(e)}")
-                messages.error(request, f"An error occurred while placing your order: {str(e)}")
+                # Print detailed error information
+                logger.error(f"Error saving order: {str(e)}")
+                logger.error(traceback.format_exc())
+                messages.error(request, f'Error saving order: {str(e)}')
         else:
-            logger.error(f"Form validation errors: {form.errors}")
-            messages.error(request, "Please correct the errors in the form.")
+            logger.error(f"Form is invalid. Errors: {form.errors}")
+            messages.error(request, f"Form validation failed: {form.errors}")
     else:
         form = OrderForm()
-        if launderer_id:
-            try:
-                launderer = Launderer.objects.get(id=launderer_id)
-                form.fields['launderer'].initial = launderer.id
-            except Launderer.DoesNotExist:
-                messages.error(request, "Selected launderer does not exist.")
-                return redirect('customer:scheduling')
     
-    launderers = Launderer.objects.filter(is_verified=True)
-    # print("launderers : ", launderers)
-    # print(available_services)
-
-    # launderer = get_object_or_404(Launderer, id=launderer_id)
-    cloth_items = ClothItem.objects.filter(launderer=launderer)
-    # Get available services for this launderer
-    available_services = set()
-    
-    for item in cloth_items:
-        if item.service_type:
-            available_services.add(item.service_type)
-        else:
-            # If no specific service type is set, assume it's available for all services
-            available_services.update([choice[0] for choice in Order.SERVICE_CHOICES])
     return render(request, 'customer/scheduling.html', {
         'form': form,
-        'launderers': launderers,
-        'cloth_items': cloth_items,
-        'available_services': available_services,
+        'launderer': launderer,
+        'available_services': json.dumps(available_services_list),  # Pass as JSON string
+        'distance': distance,
+        'delivery_charge': delivery_charge,
+        'cloth_items_json': cloth_items_json,
+        'saved_addresses': saved_addresses
     })
-
-@login_required
-def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, customer=request.user.customer)
-    
-    # Only allow cancellation if order is pending acceptance
-    if order.status != 'pending_acceptance':
-        messages.error(request, "You can only cancel orders that are pending acceptance.")
-        return redirect('customer:order_details', order_id=order.id)
-    
-    if request.method == 'POST':
-        with transaction.atomic():
-            order.status = 'cancelled'
-            order.save()
-            
-            # Create status update
-            from launderer.models import LaundererOrderStatus, Notification
-            LaundererOrderStatus.objects.create(
-                order=order,
-                status='cancelled',
-                notes="Cancelled by customer",
-                updated_by=request.user
-            )
-            
-            # Create notification for launderer
-            if order.launderer:
-                Notification.objects.create(
-                    user=order.launderer.user,
-                    notification_type='order_status',
-                    title="Order Cancelled",
-                    message=f"Order #{order.id} has been cancelled by the customer.",
-                    order=order
-                )
-            
-            messages.success(request, "Your order has been cancelled successfully.")
-            return redirect('customer:orders')
-    
-    return redirect('customer:order_details', order_id=order.id)
 
 
 @login_required
@@ -438,7 +635,7 @@ def contact(request):
     if request.user.is_authenticated:
         previous_messages = ContactMessage.objects.filter(user=request.user).order_by('-created_at')
     
-    return render(request, 'customer/unregistered-contact.html', {
+    return render(request, 'customer/contact.html', {
         'confirmation_message': confirmation_message,
         'previous_messages': previous_messages
     })
@@ -457,7 +654,7 @@ def cancel_order(request, order_id):
         order.save()
         
         # Create status update
-        from launderer.models import LaundererOrderStatus, Notification
+        from launderer.models import LaundererOrderStatus
         LaundererOrderStatus.objects.create(
             order=order,
             status='cancelled',
@@ -466,7 +663,8 @@ def cancel_order(request, order_id):
         )
         
         # Create notification for launderer
-        Notification.objects.create(
+        from launderer.models import Notification as LaundererNotification
+        LaundererNotification.objects.create(
             user=order.launderer.user,
             notification_type='order_status',
             title="Order Cancelled",
@@ -481,7 +679,7 @@ def cancel_order(request, order_id):
 
 @login_required
 def notifications(request):
-    from launderer.models import Notification
+    from customer.models import Notification
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     
     # Update notification count in session
@@ -493,7 +691,7 @@ def notifications(request):
 
 @login_required
 def mark_notification_read(request, notification_id):
-    from launderer.models import Notification
+    from customer.models import Notification
     notification = get_object_or_404(Notification, id=notification_id, user=request.user)
     
     if request.method == 'POST':
@@ -507,7 +705,7 @@ def mark_notification_read(request, notification_id):
 
 @login_required
 def mark_all_read(request):
-    from launderer.models import Notification
+    from customer.models import Notification
     if request.method == 'POST':
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
         
@@ -515,4 +713,12 @@ def mark_all_read(request):
         request.session['notification_count'] = 0
     
     return redirect('customer:notifications')
+
+@login_required
+def order_tracking(request, order_id):
+    order = get_object_or_404(Order, order_id=order_id, customer=request.user)
+    
+    return render(request, 'customer/order_tracking.html', {
+        'order': order
+    })
 

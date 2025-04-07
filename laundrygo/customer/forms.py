@@ -46,8 +46,8 @@ class CustomerProfileUpdateForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['launderer', 'service_type', 'pickup_delivery', 'pickup_date', 'pickup_slot', 
-                  'delivery_date', 'special_instructions', 'payment_method']
+        fields = ['service_type', 'pickup_delivery', 'pickup_date', 'pickup_slot', 
+                  'delivery_date', 'special_instructions', 'payment_method', 'launderer']
         widgets = {
             'pickup_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'delivery_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -56,6 +56,7 @@ class OrderForm(forms.ModelForm):
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
             'service_type': forms.Select(attrs={'class': 'form-control'}),
             'pickup_delivery': forms.Select(attrs={'class': 'form-control'}),
+            'launderer': forms.HiddenInput(),  # Hide this field as it will be set programmatically
         }
     
     def clean(self):
@@ -72,6 +73,8 @@ class OrderForm(forms.ModelForm):
             self.add_error('delivery_date', 'Delivery date must be after pickup date')
         
         return cleaned_data
+
+
 
 class ReviewForm(forms.ModelForm):
     class Meta:

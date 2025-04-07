@@ -501,15 +501,16 @@
         <input type="hidden" name="selected_services" id="selectedServicesInput" value="">
         <input type="hidden" name="selected_address_id" id="selectedAddressId" value="{{ user.id }}">
         
+        <!-- Add hidden input for launderer ID -->
+        <input type="hidden" name="launderer" value="{{ launderer.id }}">
+        
         <!-- Service Selection Section -->
         <div class="services-section">
             <h3>Select Services</h3>
             <div class="services-grid">
                 {% for service_code, service_name in form.fields.service_type.choices %}
-                    {% if service_code in available_services %}
-                    <label class="service-card cust-2" data-service="{{ service_code }}">
-                        <p>Checking: {{ service_code }}</p>
-                        <p>Checking: {{ available_services }}</p>
+                    {% if service_code in available_services|safe|json_script:"availableServices" %}
+                    <label class="service-card" data-service="{{ service_code }}">
                         <input type="checkbox" name="service_types" value="{{ service_code }}" class="service-checkbox">
                         <span class="service-icon">
                             {% if service_code == 'washing' %}
@@ -537,8 +538,6 @@
                     </label>
                     {% else %}
                     <div class="service-card service-unavailable">
-                        <p>Checking: {{ service_code }}</p>
-                        <p>Checking: {{ available_services }}</p>
                         <span class="service-icon">
                             {% if service_code == 'washing' %}
                                 <i class="fas fa-tshirt"></i>
@@ -733,14 +732,28 @@
             </div>
         </div>
         
+        <!-- Add a hidden input for service_type that will be populated by JavaScript -->
+        <input type="hidden" name="service_type" id="serviceTypeInput" value="">
+        
         <button type="submit" class="schedule-btn">Schedule Laundry</button>
     </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script id="availableServices" type="application/json">
+    {{ available_services|safe }}
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Log to verify the script is running
+        console.log('Scheduling script loaded');
+        
+        // Get available services from the script tag
+        const availableServicesElement = document.getElementById('availableServices');
+        const availableServices = JSON.parse(availableServicesElement.textContent);
+        console.log('Available services:', availableServices);
+        
         // Store all cloth items from the server
         const allClothItems = JSON.parse('{{ cloth_items_json|escapejs }}');
         
@@ -753,6 +766,7 @@
         const addressRadios = document.querySelectorAll('.address-radio');
         const clothItemsBody = document.getElementById('clothItemsBody');
         const selectedServicesInput = document.getElementById('selectedServicesInput');
+        const serviceTypeInput = document.getElementById('serviceTypeInput');
         const selectedAddressId = document.getElementById('selectedAddressId');
         const itemsDataInput = document.getElementById('itemsData');
         const form = document.getElementById('schedulingForm');
@@ -784,6 +798,27 @@
                 updateClothItems();
             });
         });
+        
+        // Update selected services
+        function updateSelectedServices() {
+            const selectedServices = [];
+            serviceCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedServices.push(checkbox.value);
+                }
+            });
+            
+            selectedServicesInput.value = JSON.stringify(selectedServices);
+            
+            // Set the first selected service as the service_type
+            if (selectedServices.length > 0) {
+                serviceTypeInput.value = selectedServices[0];
+            } else {
+                serviceTypeInput.value = '';
+            }
+            
+            return selectedServices;
+        }
         
         // Pickup option selection
         pickupOptions.forEach(option => {
@@ -870,19 +905,6 @@
                 }
             }
         });
-        
-        // Update selected services
-        function updateSelectedServices() {
-            const selectedServices = [];
-            serviceCheckboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    selectedServices.push(checkbox.value);
-                }
-            });
-            
-            selectedServicesInput.value = JSON.stringify(selectedServices);
-            return selectedServices;
-        }
         
         // Filter and display cloth items based on selected services
         function updateClothItems() {
@@ -1020,6 +1042,9 @@
                 alert('Please select at least one service');
                 return;
             }
+            
+            // Make sure the service_type is set
+            serviceTypeInput.value = selectedServices[0];
             
             // Check if at least one item is selected
             const checkboxes = document.querySelectorAll('.item-checkbox');

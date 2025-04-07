@@ -11,12 +11,38 @@ import csv
 import io
 import xlsxwriter
 from datetime import datetime, timedelta
-
+import logging
 from customer.models import User, Launderer, ClothItem, ClothType, Order, OrderItem, CustomerSupport, Review
 from .models import LaundererService, LaundererWorkingHour, LaundererPaymentMethod, LaundererOrderStatus, Notification
 from .forms import (LaundererRegistrationForm, LaundererLoginForm, ClothItemForm, LaundererServiceForm,
                    LaundererWorkingHourForm, LaundererPaymentMethodForm, OrderStatusUpdateForm,
                    LaundererProfileForm, LaundererSupportForm)
+
+
+# Set up logger
+logger = logging.getLogger(__name__)
+
+# Add this debugging function at the top of the file after imports
+def debug_orders(launderer):
+    """Debug function to check orders in the database"""
+    logger = logging.getLogger(__name__)
+    
+    # Check all orders for this launderer
+    all_orders = Order.objects.filter(launderer=launderer)
+    logger.info(f"Total orders for launderer {launderer.business_name}: {all_orders.count()}")
+    
+    # Check orders by status
+    for status, _ in Order.STATUS_CHOICES:
+        count = Order.objects.filter(launderer=launderer, status=status).count()
+        logger.info(f"Orders with status '{status}': {count}")
+    
+    # Check specifically for pending_acceptance orders
+    pending_orders = Order.objects.filter(launderer=launderer, status='pending_acceptance')
+    logger.info(f"Pending acceptance orders: {pending_orders.count()}")
+    for order in pending_orders:
+        logger.info(f"Order ID: {order.order_id}, Customer: {order.customer.username}, Created: {order.created_at}")
+    
+    return pending_orders
 
 # Helper function to check if user is launderer
 def is_launderer(user):
@@ -117,6 +143,11 @@ def dashboard(request):
 @user_passes_test(is_launderer)
 def received_orders(request):
     launderer = request.user.launderer_profile
+    logger = logging.getLogger(__name__)
+    
+    # Debug orders in the database
+    logger.info("Debugging orders for received_orders view")
+    pending_orders = debug_orders(launderer)
     
     # Get search parameters
     search_query = request.GET.get('search', '')
@@ -125,6 +156,7 @@ def received_orders(request):
     
     # Filter orders - only show pending_acceptance orders
     orders = Order.objects.filter(launderer=launderer, status='pending_acceptance')
+    logger.info(f"Found {orders.count()} pending acceptance orders after filter")
     
     if search_query:
         orders = orders.filter(
@@ -345,9 +377,9 @@ def order_detail(request, order_id):
         action = request.POST.get('action')
         
         if action == 'confirm':
-            # Only confirm if order is pending
-            if order.status != 'pending':
-                messages.error(request, "This order cannot be confirmed because it is not in pending status.")
+            # Only confirm if order is pending acceptance
+            if order.status != 'pending_acceptance':
+                messages.error(request, "This order cannot be confirmed because it is not in pending acceptance status.")
                 return redirect('launderer:order_detail', order_id=order.order_id)
                 
             # Confirm the order
@@ -363,7 +395,8 @@ def order_detail(request, order_id):
             )
             
             # Create notification for customer
-            Notification.objects.create(
+            from customer.models import Notification as CustomerNotification
+            CustomerNotification.objects.create(
                 user=order.customer,
                 notification_type='order_status',
                 title="Order Confirmed",
@@ -377,9 +410,9 @@ def order_detail(request, order_id):
             messages.success(request, "Order confirmed successfully.")
             
         elif action == 'reject':
-            # Only reject if order is pending
-            if order.status != 'pending':
-                messages.error(request, "This order cannot be rejected because it is not in pending status.")
+            # Only reject if order is pending acceptance
+            if order.status != 'pending_acceptance':
+                messages.error(request, "This order cannot be rejected because it is not in pending acceptance status.")
                 return redirect('launderer:order_detail', order_id=order.order_id)
                 
             # Reject the order
@@ -402,7 +435,8 @@ def order_detail(request, order_id):
             )
             
             # Create notification for customer
-            Notification.objects.create(
+            from customer.models import Notification as CustomerNotification
+            CustomerNotification.objects.create(
                 user=order.customer,
                 notification_type='order_status',
                 title="Order Rejected",
@@ -447,7 +481,8 @@ def order_detail(request, order_id):
                 
                 # Create notification for customer
                 status_display = dict(Order.STATUS_CHOICES)[new_status]
-                Notification.objects.create(
+                from customer.models import Notification as CustomerNotification
+                CustomerNotification.objects.create(
                     user=order.customer,
                     notification_type='order_status',
                     title=f"Order {status_display}",
@@ -499,7 +534,8 @@ def confirm_order(request, order_id):
         )
         
         # Create notification for customer
-        Notification.objects.create(
+        from customer.models import Notification as CustomerNotification
+        CustomerNotification.objects.create(
             user=order.customer,
             notification_type='order_status',
             title="Order Confirmed",
@@ -539,7 +575,8 @@ def reject_order(request, order_id):
             )
             
             # Create notification for customer
-            Notification.objects.create(
+            from customer.models import Notification as CustomerNotification
+            CustomerNotification.objects.create(
                 user=order.customer,
                 notification_type='order_status',
                 title="Order Rejected",

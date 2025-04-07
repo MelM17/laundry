@@ -1,9 +1,83 @@
 {% extends 'launderer/base.html' %}
 {% load static %}
-{% block title %}Recieved Orders - LaundryGo Launderer{% endblock %}
+{% block title %}Received Orders - LaundryGo Launderer{% endblock %}
 
-{% block page_title %}Recieved Orders{% endblock %}
+{% block page_title %}Received Orders{% endblock %}
+
 {% block content %}
+<style>
+    /* Table styling */
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .table thead th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        padding: 15px;
+        text-align: left;
+        border-bottom: none;
+        position: relative;
+    }
+    
+    .table tbody tr:nth-child(odd) {
+        background-color: rgba(240, 240, 240, 0.5);
+    }
+    
+    .table tbody tr:nth-child(even) {
+        background-color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(161, 162, 146, 0.666);
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+    }
+    
+    .table td {
+        padding: 12px 15px;
+        vertical-align: middle;
+        border-top: 1px solid #eee;
+    }
+    
+    .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    /* Button styling within table */
+    .table .btn {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .table .btn-success {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .table .btn-success:hover {
+        background-color: #3a4a40;
+        border-color: #3a4a40;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
 <div class="container mt-5">
 
     <div class="filter-section">
@@ -34,7 +108,7 @@
     </div>
     {% endif %}
     
-    {% if orders %}
+    {% if page_obj %}
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
@@ -49,31 +123,91 @@
                 </tr>
             </thead>
             <tbody>
-                {% for order in orders %}
+                {% for order in page_obj %}
                 <tr>
-                    <td>#{{ order.id }}</td>
-                    <td>{{ order.customer.user.username }}</td>
-                    <td>{{ order.pickup_date|date:"M d, Y" }} at {{ order.pickup_time|time:"g:i A" }}</td>
-                    <td>{{ order.delivery_date|date:"M d, Y" }} at {{ order.delivery_time|time:"g:i A" }}</td>
-                    <td>{{ order.orderitem_set.count }}</td>
+                    <td>#{{ order.order_id|truncatechars:8 }}</td>
+                    <td>{{ order.customer.username }}</td>
+                    <td>{{ order.pickup_date|date:"M d, Y" }} ({{ order.get_pickup_slot_display }})</td>
+                    <td>{{ order.delivery_date|date:"M d, Y" }} {% if order.delivery_slot %}({{ order.get_delivery_slot_display }}){% endif %}</td>
+                    <td>{{ order.items.count }}</td>
                     <td>{{ order.created_at|date:"M d, Y g:i A" }}</td>
                     <td>
                         <div>
-                            <a href="{% url 'launderer:order_detail' order.id %}" class="btn btn-success" style="margin-bottom: 10px; width: 100px; text-align: center;">View Details</a>
+                            <a href="{% url 'launderer:order_detail' order.order_id %}" class="btn btn-success" style="margin-bottom: 10px; width: 100px; text-align: center;">View Details</a>
                         </div>
-                        <a href="{% url 'launderer:accept_order' order.id %}" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to accept this order?')">Accept</a>
-                        <a href="{% url 'launderer:reject_order' order.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to reject this order?')">Reject</a>
+                        <form method="post" action="{% url 'launderer:confirm_order' order.order_id %}" style="display: inline-block; margin-right: 5px;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to accept this order?')">Accept</button>
+                        </form>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="showRejectModal('{{ order.order_id }}')">Reject</button>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination" style="display: flex; justify-content: center; list-style: none; margin-top: 20px;">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">&laquo; first</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">previous</a>
+        {% endif %}
+        
+        <span style="margin: 0 5px; padding: 5px 10px;">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" style="margin: 0 5px; padding: 5px 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 3px;">last &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
     {% else %}
     <div class="card">
-        <p style="text-align: center;">No Recieved orders found.</p>
+        <p style="text-align: center;">No received orders found.</p>
     </div>
     {% endif %}
 </div>
+
+<!-- Reject Order Modal -->
+<div id="rejectModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <span class="close" onclick="closeRejectModal()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h3 style="margin-top: 0; color: var(--primary-color);">Reject Order</h3>
+        <form id="rejectForm" method="post" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="rejection_reason" style="display: block; margin-bottom: 8px; font-weight: bold;">Reason for Rejection:</label>
+                <textarea id="rejection_reason" name="rejection_reason" class="form-control" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required></textarea>
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="button" onclick="closeRejectModal()" class="btn" style="margin-right: 10px;">Cancel</button>
+                <button type="submit" class="btn btn-danger">Reject Order</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showRejectModal(orderId) {
+    document.getElementById('rejectModal').style.display = 'block';
+    document.getElementById('rejectForm').action = "{% url 'launderer:reject_order' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', orderId);
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('rejectModal');
+    if (event.target == modal) {
+        closeRejectModal();
+    }
+}
+</script>
 {% endblock %}
 
